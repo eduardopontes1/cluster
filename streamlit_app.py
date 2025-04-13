@@ -105,7 +105,7 @@ if start_button:
     if st.button("Ver meu resultado final e gráficos"):
         st.info(f"Você tem mais perfil para o curso de **{curso_final}**!")
 
-        # --- Visualização ---
+        # --- Visualização --- 
         st.subheader("Visualização dos Agrupamentos")
         pca1 = PCA(n_components=2)
         pca_data1 = pca1.fit_transform(X1)
