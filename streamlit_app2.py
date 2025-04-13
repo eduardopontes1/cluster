@@ -15,8 +15,6 @@ def generate_simulated_data(shape, num_samples):
 # --- Parte 1: Perguntas para identificar Humanas ou Exatas ---
 st.subheader("Etapa 1: Seu estilo de pensamento")
 
-start_button = st.button("Responder às perguntas")
-
 if start_button:
     p1 = st.radio("Você prefere escrever ou resolver problemas lógicos?", ['Escrever', 'Resolver problemas'])
     p2 = st.radio("Você se interessa mais por leitura ou matemática?", ['Leitura', 'Matemática'])
