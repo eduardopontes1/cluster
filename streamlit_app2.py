@@ -1,29 +1,16 @@
 import streamlit as st
 import numpy as np
-import pandas as pd
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
-import os
 
 st.set_page_config(layout="centered")
 st.title("🔍 Descubra seu Perfil Acadêmico")
 st.markdown("Responda algumas perguntas e veja em qual grupo você se encaixa!")
 
-# --- Função para carregar dados anteriores (para aprendizado incremental simples) ---
-def load_data(filename, shape):
-    if os.path.exists(filename):
-        return pd.read_csv(filename).values
-    else:
-        return np.empty((0, shape))
-
-# --- Função para salvar nova resposta ---
-def save_response(filename, new_data):
-    df = pd.DataFrame(new_data.reshape(1, -1))
-    if os.path.exists(filename):
-        df.to_csv(filename, mode='a', header=False, index=False)
-    else:
-        df.to_csv(filename, index=False)
+# --- Função para gerar dados simulados ---
+def generate_simulated_data(shape, num_samples):
+    return np.random.randint(0, 2, size=(num_samples, shape))
 
 # --- Parte 1: Perguntas para identificar Humanas ou Exatas ---
 st.subheader("Etapa 1: Seu estilo de pensamento")
@@ -43,10 +30,11 @@ if start_button:
         1 if p4 == 'Interpretar textos' else 0
     ])
 
-    X1 = load_data("respostas_fase1.csv", 4)
+    # Gerando dados simulados para a fase 1
+    X1 = generate_simulated_data(4, 100)
     X1 = np.vstack([X1, respostas_1])
-    save_response("respostas_fase1.csv", respostas_1)
 
+    # Aplicando KMeans para separar em 2 grupos: Humanas vs Exatas
     kmeans1 = KMeans(n_clusters=2, random_state=42, n_init=10)
     labels1 = kmeans1.fit_predict(X1)
     user_group = labels1[-1]
@@ -74,10 +62,11 @@ if start_button:
             1 if h6 == 'Sim' else 0
         ])
 
-        X2 = load_data("respostas_humanas.csv", 6)
+        # Gerando dados simulados para a fase 2 de Humanas
+        X2 = generate_simulated_data(6, 100)
         X2 = np.vstack([X2, respostas_2])
-        save_response("respostas_humanas.csv", respostas_2)
 
+        # Aplicando KMeans para separar os cursos da área de Humanas
         kmeans2 = KMeans(n_clusters=4, random_state=42, n_init=10)
         labels2 = kmeans2.fit_predict(X2)
         curso_idx = labels2[-1]
@@ -101,10 +90,11 @@ if start_button:
             1 if e6 == 'Sim' else 0
         ])
 
-        X2 = load_data("respostas_exatas.csv", 6)
+        # Gerando dados simulados para a fase 2 de Exatas
+        X2 = generate_simulated_data(6, 100)
         X2 = np.vstack([X2, respostas_2])
-        save_response("respostas_exatas.csv", respostas_2)
 
+        # Aplicando KMeans para separar os cursos da área de Exatas
         kmeans2 = KMeans(n_clusters=4, random_state=42, n_init=10)
         labels2 = kmeans2.fit_predict(X2)
         curso_idx = labels2[-1]
