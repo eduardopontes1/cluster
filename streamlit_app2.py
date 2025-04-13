@@ -50,7 +50,7 @@ if perfil == "Humanas":
     h5 = st.radio("Você se vê atuando em áreas sociais ou comunitárias?", ['Sim', 'Não'])
     h6 = st.radio("Você gosta de ler sobre comportamento humano e sociedade?", ['Sim', 'Não'])
 
-    respostas_2 = np.array([
+    respostas_2_humanas = np.array([
         1 if h1 == 'Sim' else 0,
         1 if h2 == 'Sim' else 0,
         1 if h3 == 'Sim' else 0,
@@ -60,15 +60,18 @@ if perfil == "Humanas":
     ])
 
     # Gerando dados simulados para a fase 2 de Humanas
-    X2 = generate_simulated_data(6, 100)
-    X2 = np.vstack([X2, respostas_2])
+    X2_humanas = generate_simulated_data(6, 100)
+    X2_humanas = np.vstack([X2_humanas, respostas_2_humanas])
 
     # Aplicando KMeans para separar os cursos da área de Humanas
-    kmeans2 = KMeans(n_clusters=4, random_state=42, n_init=10)
-    labels2 = kmeans2.fit_predict(X2)
-    curso_idx = labels2[-1]
+    kmeans2_humanas = KMeans(n_clusters=4, random_state=42, n_init=10)
+    labels2_humanas = kmeans2_humanas.fit_predict(X2_humanas)
+    curso_idx = labels2_humanas[-1]
     cursos = ['Professor(a)', 'Direito', 'Comunicação', 'Área Médica']
     curso_final = cursos[curso_idx]
+
+    X2 = X2_humanas
+    labels2 = labels2_humanas
 
 else:
     e1 = st.radio("Você gosta de resolver problemas matemáticos?", ['Sim', 'Não'])
@@ -78,7 +81,7 @@ else:
     e5 = st.radio("Você gosta de construir, projetar ou inventar coisas?", ['Sim', 'Não'])
     e6 = st.radio("Você tem interesse em lógica, quebra-cabeças ou jogos de estratégia?", ['Sim', 'Não'])
 
-    respostas_2 = np.array([
+    respostas_2_exatas = np.array([
         1 if e1 == 'Sim' else 0,
         1 if e2 == 'Sim' else 0,
         1 if e3 == 'Sim' else 0,
@@ -88,15 +91,18 @@ else:
     ])
 
     # Gerando dados simulados para a fase 2 de Exatas
-    X2 = generate_simulated_data(6, 100)
-    X2 = np.vstack([X2, respostas_2])
+    X2_exatas = generate_simulated_data(6, 100)
+    X2_exatas = np.vstack([X2_exatas, respostas_2_exatas])
 
     # Aplicando KMeans para separar os cursos da área de Exatas
-    kmeans2 = KMeans(n_clusters=4, random_state=42, n_init=10)
-    labels2 = kmeans2.fit_predict(X2)
-    curso_idx = labels2[-1]
+    kmeans2_exatas = KMeans(n_clusters=4, random_state=42, n_init=10)
+    labels2_exatas = kmeans2_exatas.fit_predict(X2_exatas)
+    curso_idx = labels2_exatas[-1]
     cursos = ['Estatística/Matemática', 'Engenharia', 'Física', 'Ciência da Computação']
     curso_final = cursos[curso_idx]
+
+    X2 = X2_exatas
+    labels2 = labels2_exatas
 
 # Botão final para exibir resultado e gráficos
 if st.button("Ver meu resultado final e gráficos"):
