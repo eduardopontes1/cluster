@@ -5,7 +5,7 @@ from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 
 st.set_page_config(layout="centered")
-st.title("🔍 Descubra seu Perfil Acadêmico")
+st.title("🔍 Descubra seu Perfil Acadêmicoas")
 st.markdown("Responda algumas perguntas e veja em qual grupo você se encaixa!")
 
 # --- Função para gerar dados simulados ---
