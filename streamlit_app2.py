@@ -4,158 +4,126 @@ import pandas as pd
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
-import os
+import matplotlib.patches as mpatches
 
 st.set_page_config(layout="centered")
-st.title("🎓 Descubra seu Perfil Acadêmico")
-st.markdown("Responda às perguntas para saber qual curso combina mais com você!")
+st.title("🔍 Descubra seu Perfil Acadêmico com Clustering")
+st.markdown("Responda as perguntas e veja qual curso mais combina com você usando agrupamento de dados!")
 
-# Funções auxiliares
-def load_data(filename, shape, simulate=False):
-    if os.path.exists(filename):
-        return pd.read_csv(filename).values
-    elif simulate:
-        return np.random.randint(0, 2, size=(20, shape))  # simula 20 respostas binárias
-    else:
-        return np.empty((0, shape))
+# === Funções auxiliares ===
+def gerar_amostras(base, n=50):
+    return np.clip(np.random.normal(loc=base, scale=0.2, size=(n, len(base))), 0, 1)
 
-def save_response(filename, new_data):
-    df = pd.DataFrame(new_data.reshape(1, -1))
-    if os.path.exists(filename):
-        df.to_csv(filename, mode='a', header=False, index=False)
-    else:
-        df.to_csv(filename, index=False)
-
-# Função para aplicar pesos às respostas
-def aplicar_pesos(respostas, pesos):
-    return np.dot(respostas, pesos)
-
-# --- Etapa 1: Humanas ou Exatas ---
+# === Etapa 1: Humanas vs Exatas ===
 st.subheader("Etapa 1: Seu estilo de pensamento")
+p1 = st.radio("Você prefere escrever ou resolver problemas lógicos?", ['Escrever', 'Resolver problemas'])
+p2 = st.radio("Você se interessa mais por leitura ou matemática?", ['Leitura', 'Matemática'])
+p3 = st.radio("Você prefere discutir ideias ou construir coisas?", ['Discutir ideias', 'Construir coisas'])
+p4 = st.radio("Você gosta mais de interpretar textos ou fazer cálculos?", ['Interpretar textos', 'Fazer cálculos'])
+p5 = st.radio("Você prefere trabalhar com pessoas ou com números?", ['Pessoas', 'Números'])
 
-perguntas1 = [
-    "Você prefere escrever ou resolver problemas lógicos?",
-    "Você se interessa mais por leitura ou matemática?",
-    "Você prefere discutir ideias ou construir coisas?",
-    "Você gosta mais de interpretar textos ou fazer cálculos?",
-    "Você prefere trabalhar com pessoas ou com números?"
-]
-opcoes1 = [
-    ['Escrever', 'Resolver problemas'],
-    ['Leitura', 'Matemática'],
-    ['Discutir ideias', 'Construir coisas'],
-    ['Interpretar textos', 'Fazer cálculos'],
-    ['Pessoas', 'Números']
-]
-pesos1 = np.array([1.2, 1.0, 1.1, 1.0, 1.3])  # pesos para perguntas
+respostas_1 = np.array([
+    1 if p1 == 'Escrever' else 0,
+    1 if p2 == 'Leitura' else 0,
+    1 if p3 == 'Discutir ideias' else 0,
+    1 if p4 == 'Interpretar textos' else 0,
+    1 if p5 == 'Pessoas' else 0
+])
 
-respostas_raw1 = []
-for i, p in enumerate(perguntas1):
-    resp = st.radio(p, opcoes1[i], key=f"p1_{i}")
-    respostas_raw1.append(1 if resp == opcoes1[i][0] else 0)
+referencias_fase1 = {
+    "Humanas": [1, 1, 1, 1, 1],
+    "Exatas":  [0, 0, 0, 0, 0],
+}
 
-respostas1 = np.array(respostas_raw1)
-score = aplicar_pesos(respostas1, pesos1)
+X1 = np.vstack([
+    gerar_amostras(referencias_fase1["Humanas"], 50),
+    gerar_amostras(referencias_fase1["Exatas"], 50)
+])
+kmeans1 = KMeans(n_clusters=2, random_state=42, n_init=10)
+kmeans1.fit(X1)
+label1 = kmeans1.predict(respostas_1.reshape(1, -1))[0]
 
-# Teste de hipótese simples (score > limiar → Humanas)
-limiar_score = np.mean(pesos1)
-perfil = "Humanas" if score >= limiar_score else "Exatas"
+perfil = "Humanas" if label1 == 0 else "Exatas"
 st.success(f"Você tem mais afinidade com a área de **{perfil}**!")
 
-# Aprendizado incremental da Etapa 1
-X1 = load_data("respostas_fase1.csv", 5, simulate=True)
-X1 = np.vstack([X1, respostas1])
-save_response("respostas_fase1.csv", respostas1)
-
-# Clustering da etapa 1 (apenas para visualização)
-kmeans1 = KMeans(n_clusters=2, random_state=42, n_init=10)
-labels1 = kmeans1.fit_predict(X1)
-
-# --- Etapa 2: Curso Específico ---
+# === Etapa 2: Curso específico ===
 st.subheader("Etapa 2: Qual curso combina com você?")
-
-# Perguntas, cursos e pesos por área
-perguntas_humanas = [
-    "Você gostaria de ensinar em escolas ou universidades?",
-    "Você se interessa por leis, justiça ou debate?",
-    "Você gosta de se comunicar, gravar vídeos ou escrever publicamente?",
-    "Você gostaria de cuidar da saúde das pessoas?"
-]
-perguntas_exatas = [
-    "Você gosta de resolver problemas matemáticos?",
-    "Você se interessa por computadores e tecnologia?",
-    "Você tem curiosidade sobre como o universo funciona?",
-    "Você prefere lidar com dados e estatísticas do que com pessoas?"
-]
-cursos_humanas = ['Professor(a)', 'Direito', 'Comunicação', 'Área Médica']
-cursos_exatas = ['Estatística/Matemática', 'Engenharia', 'Física', 'Ciência da Computação']
-pesos2 = np.array([1.1, 1.2, 1.0, 1.3])  # mesmos para ambos por simplicidade
-
-respostas_raw2 = []
 if perfil == "Humanas":
-    for i, p in enumerate(perguntas_humanas):
-        resp = st.radio(p, ['Sim', 'Não'], key=f"h{i}")
-        respostas_raw2.append(1 if resp == 'Sim' else 0)
-    cursos = cursos_humanas
-    filename2 = "respostas_humanas.csv"
+    perguntas = [
+        "Você gostaria de ensinar em escolas ou universidades?",
+        "Você se interessa por leis, justiça ou debate?",
+        "Você gosta de se comunicar, gravar vídeos ou escrever publicamente?",
+        "Você gostaria de cuidar da saúde mental ou física das pessoas?",
+        "Você gosta de trabalhar com crianças e adolescentes?",
+        "Você tem interesse em questões sociais e humanas?",
+        "Você gosta de argumentar e defender ideias?",
+        "Você se interessa por comunicação e marketing?",
+        "Você gostaria de atuar na área da saúde?",
+    ]
+    cursos = ['Professor(a)', 'Direito', 'Comunicação', 'Área Médica']
+    referencias = {
+        "Professor(a)":     [1, 0, 0, 0, 1, 1, 0, 0, 0],
+        "Direito":          [0, 1, 0, 0, 0, 1, 1, 0, 0],
+        "Comunicação":      [0, 0, 1, 0, 0, 0, 1, 1, 0],
+        "Área Médica":      [0, 0, 0, 1, 0, 1, 0, 0, 1],
+    ]
 else:
-    for i, p in enumerate(perguntas_exatas):
-        resp = st.radio(p, ['Sim', 'Não'], key=f"e{i}")
-        respostas_raw2.append(1 if resp == 'Sim' else 0)
-    cursos = cursos_exatas
-    filename2 = "respostas_exatas.csv"
+    perguntas = [
+        "Você gosta de resolver problemas matemáticos?",
+        "Você se interessa por computadores e tecnologia?",
+        "Você tem curiosidade sobre como o universo funciona?",
+        "Você prefere lidar com dados e estatísticas do que com pessoas?",
+        "Você se sente confortável programando ou usando planilhas?",
+        "Você gosta de entender como máquinas funcionam?",
+        "Você tem interesse em pesquisa científica?",
+        "Você gosta de lógica e padrões?",
+        "Você gosta de automatizar tarefas ou criar sistemas?",
+    ]
+    cursos = ['Engenharia', 'Matemática/Estatística', 'Física', 'Computação']
+    referencias = {
+        "Engenharia":              [1, 0, 0, 0, 1, 1, 0, 1, 0],
+        "Matemática/Estatística": [1, 0, 0, 1, 1, 0, 1, 1, 1],
+        "Física":                  [1, 0, 1, 0, 0, 0, 1, 1, 0],
+        "Computação":              [0, 1, 0, 1, 1, 1, 0, 1, 1],
+    ]
 
-respostas2 = np.array(respostas_raw2)
-X2 = load_data(filename2, 4, simulate=True)
-X2 = np.vstack([X2, respostas2])
-save_response(filename2, respostas2)
+respostas_2 = []
+for pergunta in perguntas:
+    r = st.radio(pergunta, ['Sim', 'Não'], key=pergunta)
+    respostas_2.append(1 if r == 'Sim' else 0)
+respostas_2 = np.array(respostas_2)
 
+# Gerar amostras baseadas nas referências
+X2 = np.vstack([
+    gerar_amostras(v, 50) for v in referencias.values()
+])
 kmeans2 = KMeans(n_clusters=4, random_state=42, n_init=10)
-labels2 = kmeans2.fit_predict(X2)
-curso_idx = labels2[-1]
-curso_final = cursos[curso_idx]
-st.info(f"Você tem mais perfil para o curso de **{curso_final}**!")
+kmeans2.fit(X2)
+label2 = kmeans2.predict(respostas_2.reshape(1, -1))[0]
+curso_final = cursos[label2]
+st.info(f"Seu curso ideal é **{curso_final}**!")
 
-# --- Visualização ---
-st.subheader("Visualização dos Agrupamentos")
-pca1 = PCA(n_components=2)
-pca_data1 = pca1.fit_transform(X1)
-pca2 = PCA(n_components=2)
-pca_data2 = pca2.fit_transform(X2)
+# === Visualização ===
+st.subheader("Visualização dos Clusters")
+pca = PCA(n_components=2)
+data_viz = np.vstack([X2, respostas_2])
+labels_viz = np.append(kmeans2.labels_, [label2])
+pca_data = pca.fit_transform(data_viz)
 
-shapes = ['o', 's', '^', 'D', 'P', '*']  # círculos, quadrados, triângulos, etc.
-cores = ['red', 'green', 'blue', 'orange', 'purple', 'cyan']
+markers = ['s', '^', 'o', 'D']
+cores = ['red', 'green', 'blue', 'orange']
+fig, ax = plt.subplots(figsize=(7, 5))
 
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(13, 5))
-
-# Etapa 1
-for i in np.unique(labels1):
-    ax1.scatter(
-        pca_data1[labels1 == i, 0],
-        pca_data1[labels1 == i, 1],
-        label=f'Grupo {i+1}',
-        alpha=0.6,
-        edgecolor='k',
-        marker=shapes[i % len(shapes)],
-        c=cores[i % len(cores)]
-    )
-ax1.set_title("Fase 1: Humanas vs Exatas")
-ax1.legend()
-
-# Etapa 2
 for i, curso in enumerate(cursos):
-    ax2.scatter(
-        pca_data2[labels2 == i, 0],
-        pca_data2[labels2 == i, 1],
-        label=curso,
-        alpha=0.6,
-        edgecolor='k',
-        marker=shapes[i % len(shapes)],
-        c=cores[i % len(cores)]
-    )
-ax2.set_title("Fase 2: Cursos dentro da área")
-ax2.legend()
+    grupo = pca_data[labels_viz == i]
+    ax.scatter(grupo[:-1, 0], grupo[:-1, 1], marker=markers[i], color=cores[i], label=curso, alpha=0.6, edgecolor='k')
 
+# Destacar o usuário
+ax.scatter(pca_data[-1, 0], pca_data[-1, 1], color='black', s=120, label='Você', edgecolor='yellow', linewidth=2)
+ax.set_title("Clusters de Cursos com KMeans")
+ax.set_xlabel("Componente Principal 1")
+ax.set_ylabel("Componente Principal 2")
+ax.legend()
 st.pyplot(fig)
 
-st.caption("Os gráficos mostram os agrupamentos formados com base nas suas respostas. Quanto mais o sistema for usado, melhor ele entenderá os perfis!")
+st.caption("O gráfico mostra como suas respostas se agrupam com perfis típicos de cada curso.")
