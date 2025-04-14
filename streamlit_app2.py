@@ -83,3 +83,4 @@ if st.button("Ver resultado com KMeans"):
 
     st.subheader(f"Seu perfil é: {perfil} 🎯")
     st.info(texto)
+ 
