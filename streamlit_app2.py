@@ -1,159 +1,85 @@
 import streamlit as st
-import numpy as np
-import pandas as pd
-from sklearn.cluster import KMeans
-from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
+import numpy as np
 
-st.set_page_config(layout="centered")
-st.title("🔍 Descubra seu Perfil Acadêmico")
-st.markdown("Responda algumas perguntas e veja em qual grupo você se encaixa!")
+st.title("Descubra seu perfil com Machine Learning")
+st.write("Responda às perguntas abaixo e veja em qual grupo você se encaixa com base em agrupamento automático!")
 
-# ---------------------------- Funções auxiliares ----------------------------
-def aplicar_kmeans(dados, n_clusters=2):
-    modelo = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
-    labels = modelo.fit_predict(dados)
-    return labels, modelo
+# Perguntas e alternativas
+perguntas = [
+    "Você prefere escrever uma redação ou resolver um problema de matemática?",
+    "Você se interessa mais por história ou física?",
+    "Você gostaria de trabalhar com pessoas ou com tecnologia?",
+    "Você se sai melhor em interpretar textos ou em cálculos?",
+    "Você prefere assistir a um documentário sobre política ou sobre engenharia?"
+]
 
-def projetar_pca(dados):
+alternativas = [
+    ("Redação", "Problema de matemática"),
+    ("História", "Física"),
+    ("Pessoas", "Tecnologia"),
+    ("Interpretar textos", "Cálculos"),
+    ("Política", "Engenharia")
+]
+
+respostas = []
+for i in range(len(perguntas)):
+    st.write(f"**{perguntas[i]}**")
+    escolha = st.radio("", alternativas[i], key=f"q{i}")
+    resposta = 0 if escolha == alternativas[i][0] else 1
+    respostas.append(resposta)
+
+if st.button("Ver resultado com KMeans"):
+    X_novo = np.array(respostas).reshape(1, -1)
+
+    # Criando dados de referência simulados
+    grupo_humanas = np.array([[0,0,0,0,0], [0,0,1,0,0], [0,1,0,0,0]])
+    grupo_exatas  = np.array([[1,1,1,1,1], [1,1,1,1,0], [1,0,1,1,1]])
+    X_treino = np.vstack((grupo_humanas, grupo_exatas))
+
+    # Aplicando o KMeans
+    kmeans = KMeans(n_clusters=2, random_state=42, n_init=10)
+    kmeans.fit(X_treino)
+
+    # Prevendo o grupo do novo aluno
+    grupo = kmeans.predict(X_novo)[0]
+
+    # Descobrindo qual cluster é humanas/exatas com base na média
+    medias = kmeans.cluster_centers_
+    rotulos = ["Humanas" if np.mean(c) < 0.5 else "Exatas" for c in medias]
+    perfil = rotulos[grupo]
+
+    cor = "blue" if perfil == "Humanas" else "red"
+    simbolo = "o" if perfil == "Humanas" else "s"
+
+    # Gráfico de visualização (apenas 2D usando PCA simplificado)
+    from sklearn.decomposition import PCA
+    X_vis = np.vstack((X_treino, X_novo))
     pca = PCA(n_components=2)
-    return pca.fit_transform(dados)
+    X_2d = pca.fit_transform(X_vis)
 
-def formatar_resposta(respostas, pesos):
-    return np.array([respostas[i] * pesos[i] for i in range(len(respostas))])
-
-# ---------------------------- Etapa 1 ----------------------------
-st.subheader("Etapa 1: Seu estilo de pensamento")
-
-# Perguntas e pesos
-perguntas_1 = [
-    "Você prefere escrever ou resolver problemas lógicos?",
-    "Você se interessa mais por leitura ou matemática?",
-    "Você prefere discutir ideias ou construir coisas?",
-    "Você gosta mais de interpretar textos ou fazer cálculos?",
-    "Você prefere trabalhar com pessoas ou com números?"
-]
-
-opcoes_1 = [
-    ["Escrever", "Resolver problemas"],
-    ["Leitura", "Matemática"],
-    ["Discutir ideias", "Construir coisas"],
-    ["Interpretar textos", "Fazer cálculos"],
-    ["Pessoas", "Números"]
-]
-
-pesos_1 = [1, 1, 1, 1, 1]  # todos os pesos iguais por simplicidade
-respostas_brutas_1 = []
-
-for i, pergunta in enumerate(perguntas_1):
-    resposta = st.radio(pergunta, opcoes_1[i], key=f"etapa1_q{i}")
-    respostas_brutas_1.append(1 if resposta in ["Escrever", "Leitura", "Discutir ideias", "Interpretar textos", "Pessoas"] else 0)
-
-resposta_formatada_1 = formatar_resposta(respostas_brutas_1, pesos_1)
-
-# Grupos fixos simulados para Humanas e Exatas
-referencias_etapa1 = {
-    'Humanas': [1, 1, 1, 1, 1],
-    'Exatas': [0, 0, 0, 0, 0]
-}
-
-data_etapa1 = np.array(list(referencias_etapa1.values()) + [resposta_formatada_1])
-labels_1, modelo_1 = aplicar_kmeans(data_etapa1, n_clusters=2)
-perfil_usuario = labels_1[-1]
-perfil = list(referencias_etapa1.keys())[perfil_usuario]
-
-st.success(f"Você tem mais afinidade com a área de **{perfil}**!")
-
-# ---------------------------- Etapa 2 ----------------------------
-st.subheader("Etapa 2: Qual curso combina com você?")
-
-if perfil == "Humanas":
-    perguntas_2 = [
-        "Você gostaria de ensinar em escolas ou universidades?",
-        "Você se interessa por leis, justiça ou debate?",
-        "Você gosta de se comunicar, gravar vídeos ou escrever publicamente?",
-        "Você gostaria de cuidar da saúde das pessoas?",
-        "Você gosta de ler e interpretar textos complexos?",
-        "Você sente empatia e deseja ajudar pessoas emocionalmente?",
-        "Você prefere ambientes sociais a ambientes técnicos?",
-        "Você se interessa por filosofia ou sociologia?",
-        "Você se imagina trabalhando com jornalismo ou mídias sociais?"
-    ]
-
-    cursos_humanas = {
-        'Professor(a)': [1, 0, 0, 0, 1, 1, 0, 0, 0],
-        'Direito': [1, 1, 0, 0, 0, 0, 0, 1, 0],
-        'Comunicação': [1, 0, 1, 0, 0, 0, 1, 0, 1],
-        'Área Médica': [0, 0, 0, 1, 0, 1, 0, 0, 0]
-    }
-    opcoes_binarias = ["Sim", "Não"]
-    respostas_2 = []
-    for i, pergunta in enumerate(perguntas_2):
-        r = st.radio(pergunta, opcoes_binarias, key=f"humanas_q{i}")
-        respostas_2.append(1 if r == "Sim" else 0)
-
-    referencia = np.array(list(cursos_humanas.values()))
-    dados = np.vstack([referencia, respostas_2])
-    labels_2, modelo_2 = aplicar_kmeans(dados, n_clusters=4)
-    grupo_usuario = labels_2[-1]
-    curso_final = list(cursos_humanas.keys())[grupo_usuario % len(cursos_humanas)]
-    st.info(f"Você tem mais perfil para o curso de **{curso_final}**!")
-
-    # Visualização
-    proj = projetar_pca(dados)
-    cores = ['red', 'blue', 'green', 'purple']
-    formas = ['s', '^', 'D', 'o']
     fig, ax = plt.subplots()
-    for i, curso in enumerate(cursos_humanas):
-        ax.scatter(proj[i, 0], proj[i, 1], color=cores[i], marker=formas[i], label=curso, s=100)
-    ax.scatter(proj[-1, 0], proj[-1, 1], color='black', marker='x', s=150, label='Você')
-    ax.set_title("Agrupamento dos cursos de Humanas")
-    ax.legend()
+    cores = ["blue", "red"]
+    formas = ["o", "s"]
+
+    labels_pred = kmeans.predict(X_treino)
+    for i in range(len(X_treino)):
+        cluster_id = labels_pred[i]
+        ax.scatter(X_2d[i, 0], X_2d[i, 1], marker=formas[cluster_id], color=cores[cluster_id], s=100, alpha=0.6)
+
+    # Novo aluno (último ponto)
+    ax.scatter(X_2d[-1, 0], X_2d[-1, 1], marker=simbolo, color=cor, s=300, edgecolor='black', label="Você")
+
+    ax.set_title("Agrupamento dos perfis (Humanas x Exatas)")
+    ax.axis("off")
     st.pyplot(fig)
 
-else:
-    perguntas_2 = [
-        "Você gosta de resolver problemas matemáticos?",
-        "Você se interessa por computadores e tecnologia?",
-        "Você tem curiosidade sobre como o universo funciona?",
-        "Você prefere lidar com dados e estatísticas do que com pessoas?",
-        "Você gosta de lógica e raciocínio abstrato?",
-        "Você prefere ambientes estruturados a caóticos?",
-        "Você se interessa por engenharia e construção?",
-        "Você gosta de desafios intelectuais complexos?",
-        "Você se imagina criando softwares ou sistemas?"
-    ]
+    # Comentário final
+    if perfil == "Humanas":
+        texto = "Você foi agrupado com outros alunos com perfil mais voltado para comunicação, interpretação e temas sociais."
+    else:
+        texto = "Você foi agrupado com outros alunos com perfil mais voltado para lógica, cálculo e pensamento analítico."
 
-    cursos_exatas = {
-        'Estatística/Matemática': [1, 0, 0, 1, 1, 1, 0, 1, 0],
-        'Engenharia': [1, 1, 0, 0, 1, 1, 1, 0, 0],
-        'Física': [1, 0, 1, 0, 1, 1, 0, 1, 0],
-        'Ciência da Computação': [0, 1, 0, 1, 1, 1, 0, 1, 1]
-    }
-
-    opcoes_binarias = ["Sim", "Não"]
-    respostas_2 = []
-    for i, pergunta in enumerate(perguntas_2):
-        r = st.radio(pergunta, opcoes_binarias, key=f"exatas_q{i}")
-        respostas_2.append(1 if r == "Sim" else 0)
-
-    referencia = np.array(list(cursos_exatas.values()))
-    dados = np.vstack([referencia, respostas_2])
-    labels_2, modelo_2 = aplicar_kmeans(dados, n_clusters=4)
-    grupo_usuario = labels_2[-1]
-    curso_final = list(cursos_exatas.keys())[grupo_usuario % len(cursos_exatas)]
-    st.info(f"Você tem mais perfil para o curso de **{curso_final}**!")
-
-    # Visualização
-    proj = projetar_pca(dados)
-    cores = ['red', 'blue', 'green', 'purple']
-    formas = ['s', '^', 'D', 'o']
-    fig, ax = plt.subplots()
-    for i, curso in enumerate(cursos_exatas):
-        ax.scatter(proj[i, 0], proj[i, 1], color=cores[i], marker=formas[i], label=curso, s=100)
-    ax.scatter(proj[-1, 0], proj[-1, 1], color='black', marker='x', s=150, label='Você')
-    ax.set_title("Agrupamento dos cursos de Exatas")
-    ax.legend()
-    st.pyplot(fig)
-
-st.caption("\n\nCada ponto representa um perfil de curso. O agrupamento é feito com base nas respostas e referenciais típicos de cada área.")
+    st.subheader(f"Seu perfil é: {perfil} 🎯")
+    st.info(texto)
