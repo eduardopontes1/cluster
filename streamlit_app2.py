@@ -72,7 +72,10 @@ if st.button("Ver resultado com KMeans"):
     ax.scatter(X_2d[-1, 0], X_2d[-1, 1], marker=simbolo, color=cor, s=300, edgecolor='black', label="Você")
 
     ax.set_title("Agrupamento dos perfis (Humanas x Exatas)")
-    ax.axis("off")
+    ax.set_xlabel("Componente Principal 1")
+    ax.set_ylabel("Componente Principal 2")
+    ax.legend()
+
     st.pyplot(fig)
 
     # Comentário final
