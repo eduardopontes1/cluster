@@ -1,6 +1,7 @@
 import streamlit as st
 import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
 import numpy as np
 
 st.title("Descubra seu perfil com Machine Learning")
@@ -38,7 +39,7 @@ if st.button("Ver resultado com KMeans"):
     grupo_exatas  = np.array([[1,1,1,1,1], [1,1,1,1,0], [1,0,1,1,1]])
     X_treino = np.vstack((grupo_humanas, grupo_exatas))
 
-    # Aplicando o KMeans
+    # Aplicando o KMeans apenas no conjunto de treino
     kmeans = KMeans(n_clusters=2, random_state=42, n_init=10)
     kmeans.fit(X_treino)
 
@@ -53,23 +54,28 @@ if st.button("Ver resultado com KMeans"):
     cor = "blue" if perfil == "Humanas" else "red"
     simbolo = "o" if perfil == "Humanas" else "s"
 
-    # Gráfico de visualização (apenas 2D usando PCA simplificado)
-    from sklearn.decomposition import PCA
+    # Junta os dados para visualização com PCA
     X_vis = np.vstack((X_treino, X_novo))
     pca = PCA(n_components=2)
     X_2d = pca.fit_transform(X_vis)
+
+    # Garante que o novo ponto venha por último
+    X_treino_2d = X_2d[:-1]
+    X_novo_2d = X_2d[-1]
 
     fig, ax = plt.subplots()
     cores = ["blue", "red"]
     formas = ["o", "s"]
 
+    # Previsão dos clusters apenas para o treino (mantém lógica)
     labels_pred = kmeans.predict(X_treino)
+
     for i in range(len(X_treino)):
         cluster_id = labels_pred[i]
-        ax.scatter(X_2d[i, 0], X_2d[i, 1], marker=formas[cluster_id], color=cores[cluster_id], s=100, alpha=0.6)
+        ax.scatter(X_treino_2d[i, 0], X_treino_2d[i, 1], marker=formas[cluster_id], color=cores[cluster_id], s=100, alpha=0.6)
 
     # Novo aluno (último ponto)
-    ax.scatter(X_2d[-1, 0], X_2d[-1, 1], marker=simbolo, color=cor, s=300, edgecolor='black', label="Você")
+    ax.scatter(X_novo_2d[0], X_novo_2d[1], marker=simbolo, color=cor, s=300, edgecolor='black', label="Você")
 
     ax.set_title("Agrupamento dos perfis (Humanas x Exatas)")
     ax.set_xlabel("Componente Principal 1")
