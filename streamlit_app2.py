@@ -84,6 +84,5 @@ if st.button("Ver resultado"):
     st.subheader(f"Seu perfil é: {perfil} 🎯")
     st.info(texto)
 
-Preciso que você me explique esse código bem detalhado cada parte dele
 
 
