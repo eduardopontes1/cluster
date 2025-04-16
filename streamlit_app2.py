@@ -111,10 +111,10 @@ elif st.session_state.etapa == 2:
         },
         "Humanas": {
             "Direito": [1, 3, 11, 4, 10],
-            "Psicologia": [2, 3, 8, 11, 5],
-            "Administração": [1, 3, 8, 5, 10],
-            "Comunicação Social": [0, 1, 4, 8, 10],
-            "Pedagogia": [0, 2, 8, 5, 9]
+            "Medicina e Saúde (Medicina, Psicologia, Odontologia)": [2, 3, 5, 7, 11],
+            "História": [0, 6, 7, 9, 10],
+            "Marketing": [1, 3, 4, 8, 10],
+            "Pedagogia": [0, 2, 5, 8, 9]
         }
     }[st.session_state.perfil]
 
@@ -253,8 +253,8 @@ elif st.session_state.etapa == 2:
                 "Estatística": "📊", "Ciência da Computação": "💻",
                 "Engenharia Civil": "🏗️", "Engenharia Elétrica": "⚡",
                 "Matemática": "🧮", "Direito": "⚖️", 
-                "Psicologia": "🧠", "Administração": "📈",
-                "Comunicação Social": "📢", "Pedagogia": "📚"
+                "Medicina e Saúde (Medicina, Psicologia, Odontologia)": "🏥",
+                "História": "🏛️", "Marketing": "📢", "Pedagogia": "📚"
             }.get(curso_ideal, "🎓")
             
             st.success(f"""
@@ -284,4 +284,4 @@ elif st.session_state.etapa == 2:
 
     if st.button("↩️ Voltar para a Parte 1"):
         st.session_state.etapa = 1
-        st.rerun()    
+        st.rerun()       
