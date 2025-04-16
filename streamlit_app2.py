@@ -277,3 +277,4 @@ elif st.session_state.etapa == 2:
     if st.button("↩️ Voltar para a Parte 1"):
         st.session_state.etapa = 1
         st.rerun()
+   
