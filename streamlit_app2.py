@@ -87,16 +87,16 @@ elif st.session_state.etapa == 2:
         "Humanas": [
             "Gosto de ler e escrever textos",
             "Tenho facilidade em me expressar",
-            "Me interesso por comportamento humano",
+            "Me interesso por entender as pessoas",
             "Gosto de debater ideias e opiniões",
             "Tenho sensibilidade artística",
-            "Me preocupo com questões sociais",
+            "Me preocupo com o bem-estar dos outros",
             "Gosto de estudar história e cultura",
             "Tenho facilidade com idiomas",
             "Prefiro trabalhar em grupo",
             "Gosto de interpretar textos e obras",
             "Me interesso por política e sociedade",
-            "Tenho habilidade para mediar conflitos"
+            "Tenho habilidade para ajudar os outros"
         ]
     }[st.session_state.perfil]
 
@@ -111,7 +111,7 @@ elif st.session_state.etapa == 2:
         },
         "Humanas": {
             "Direito": [1, 3, 11, 4, 10],
-            "Medicina e Saúde (Medicina, Psicologia, Odontologia)": [2, 3, 5, 7, 11],
+            "Ciências da Saúde (Medicina, Enfermagem, Psicologia)": [2, 5, 7, 11, 6],
             "História": [0, 6, 7, 9, 10],
             "Marketing": [1, 3, 4, 8, 10],
             "Pedagogia": [0, 2, 5, 8, 9]
@@ -134,8 +134,7 @@ elif st.session_state.etapa == 2:
             st.warning("Selecione exatamente 5 características!")
         else:
             # --- PRIMEIRO GRÁFICO (Agrupamento Humanas/Exatas) ---
-            # Preparar dados para o gráfico inicial
-            fig1, ax1 = plt.subplots(figsize=(8, 5))
+            fig1, ax1 = plt.subplots(figsize=(10, 6))  # Tamanho aumentado
             
             # Gerar pontos aleatórios para cada grupo
             np.random.seed(42)
@@ -208,7 +207,7 @@ elif st.session_state.etapa == 2:
             dados_2d = pca.fit_transform(dados_treino)
             usuario_2d = pca.transform(vetor_usuario.reshape(1, -1))
             
-            fig2, ax2 = plt.subplots(figsize=(10, 6))
+            fig2, ax2 = plt.subplots(figsize=(10, 6))  # Tamanho igual ao primeiro gráfico
             cores = plt.cm.get_cmap('tab10', len(cursos_map))
             
             # Mapeamento de curso para cor
@@ -253,7 +252,7 @@ elif st.session_state.etapa == 2:
                 "Estatística": "📊", "Ciência da Computação": "💻",
                 "Engenharia Civil": "🏗️", "Engenharia Elétrica": "⚡",
                 "Matemática": "🧮", "Direito": "⚖️", 
-                "Medicina e Saúde (Medicina, Psicologia, Odontologia)": "🏥",
+                "Ciências da Saúde (Medicina, Enfermagem, Psicologia)": "🏥",
                 "História": "🏛️", "Marketing": "📢", "Pedagogia": "📚"
             }.get(curso_ideal, "🎓")
             
@@ -284,4 +283,4 @@ elif st.session_state.etapa == 2:
 
     if st.button("↩️ Voltar para a Parte 1"):
         st.session_state.etapa = 1
-        st.rerun()       
+        st.rerun()      
