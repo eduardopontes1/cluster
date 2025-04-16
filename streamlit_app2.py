@@ -1,6 +1,7 @@
 import streamlit as st
 import matplotlib.pyplot as plt
 import numpy as np
+from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 
 # Configuração da página
@@ -14,7 +15,7 @@ if 'etapa' not in st.session_state:
     st.session_state.respostas = None
     st.session_state.segunda_etapa_respostas = None
 
-# --- PRIMEIRA ETAPA ---
+# --- PRIMEIRA ETAPA (ORIGINAL FUNCIONANDO) ---
 if st.session_state.etapa == 1:
     st.write("**Parte 1/2:** Marque os conteúdos com que você mais se identifica:")
     
@@ -40,52 +41,62 @@ if st.session_state.etapa == 1:
         if sum(respostas) < 3:
             st.warning("Selecione pelo menos 3 conteúdos!")
         else:
+            # Classificação original usando K-means
+            X_novo = np.array(respostas).reshape(1, -1)
+            grupo_humanas = np.array([
+                [1,0,1,0,1,0,1,0,1,0], [0,0,1,0,1,0,0,0,1,0],
+                [1,0,0,0,1,0,1,0,0,0]
+            ])
+            grupo_exatas = np.array([
+                [0,1,0,1,0,1,0,1,0,1], [1,1,0,1,0,1,0,0,0,1],
+                [0,1,0,0,0,1,0,1,0,0]
+            ])
+            X_treino = np.vstack((grupo_humanas, grupo_exatas))
+            
+            kmeans = KMeans(n_clusters=2, random_state=42, n_init=10).fit(X_treino)
+            st.session_state.perfil = "Humanas" if kmeans.predict(X_novo)[0] == 0 else "Exatas"
             st.session_state.respostas = respostas
             st.session_state.etapa = 2
             st.session_state.segunda_etapa_respostas = [False] * 12  # 12 características
             st.rerun()
 
-# --- SEGUNDA ETAPA ---
+# --- SEGUNDA ETAPA (CORRIGIDA) ---
 elif st.session_state.etapa == 2:
-    # Classificação inicial (Humanas/Exatas)
-    perfil = "Humanas" if sum(st.session_state.respostas) < 5 else "Exatas"
-    st.session_state.perfil = perfil
-
-    st.success(f"Perfil principal: **{perfil}**")
+    st.success(f"Perfil principal: **{st.session_state.perfil}**")
     st.divider()
     st.subheader("📌 **Parte 2/2:** Selecione as características que mais combinam com você")
     
-    # Características por área (12 opções) - Definições mais específicas
+    # Características por área - Definições mais específicas e exclusivas
     caracteristicas = {
         "Exatas": [
-            "📊 Criar modelos estatísticos complexos",
-            "🧮 Desenvolver teorias matemáticas abstratas",
-            "⚡ Projetar circuitos elétricos complexos",
-            "🏗️ Calcular estruturas de concreto armado",
-            "💻 Desenvolver algoritmos de IA",
-            "📈 Analisar tendências de mercado",
-            "🔢 Resolver equações diferenciais",
-            "📐 Projetar sistemas mecânicos",
-            "🌐 Otimizar redes de computadores",
-            "🧪 Simular experimentos físicos",
-            "🤖 Programar robôs autônomos",
-            "📉 Visualizar dados multivariados"
+            "📊 Modelagem estatística avançada",  # Estatística
+            "🧮 Teoria matemática abstrata",      # Matemática
+            "⚡ Projeto de circuitos integrados",  # Eng. Elétrica
+            "🏗️ Cálculo estrutural de pontes",    # Eng. Civil
+            "💻 Desenvolvimento de algoritmos",   # Ciência da Computação
+            "📈 Análise preditiva de dados",      # Estatística
+            "🔢 Equações diferenciais parciais",  # Matemática
+            "📐 Dinâmica de fluidos computacional", # Eng. Mecânica
+            "🌐 Arquitetura de redes complexas",   # Ciência da Computação
+            "🧪 Física quântica aplicada",        # Engenharias/Física
+            "🤖 Controle de sistemas autônomos",  # Eng. Controle
+            "📉 Visualização científica de dados"  # Estatística
         ],
         "Humanas": [
-            "⚖️ Argumentar casos jurídicos complexos",
-            "📜 Analisar fontes históricas primárias",
-            "📖 Escrever crítica literária",
-            "🧠 Aplicar testes psicológicos",
-            "🗣️ Mediar conflitos organizacionais",
-            "🎨 Criar exposições artísticas",
-            "🌍 Estudar antropologia cultural",
-            "✍️ Produzir textos acadêmicos",
-            "🏛️ Interpretar artefatos arqueológicos",
-            "👥 Conduzir terapia de grupo",
-            "💬 Desenvolver discursos persuasivos",
-            "📝 Elaborar pareceres técnicos"
+            "⚖️ Direito constitucional",         # Direito
+            "📜 Paleografia e documentos antigos", # História
+            "📖 Teoria literária crítica",        # Letras
+            "🧠 Neuropsicologia cognitiva",       # Psicologia
+            "🗣️ Mediação de conflitos",          # Psicologia/Direito
+            "🎨 Curadoria de exposições",         # Artes
+            "🌍 Etnografia cultural",             # Antropologia
+            "✍️ Redação acadêmica",               # Vários
+            "🏛️ Arqueologia clássica",           # História
+            "👥 Psicologia social",               # Psicologia
+            "💬 Oratória persuasiva",             # Comunicação
+            "📝 Elaboração de contratos"          # Direito
         ]
-    }[perfil]
+    }[st.session_state.perfil]
 
     # Atualizar seleções mantendo estado
     cols = st.columns(2)
@@ -105,24 +116,26 @@ elif st.session_state.etapa == 2:
             # Mapeamento curso-características (mais específico)
             cursos_map = {
                 "Exatas": {
-                    "Estatística": [0, 5, 11],
+                    "Estatística": [0, 5, 11],  # Características exclusivas
                     "Matemática": [1, 6],
                     "Engenharia Elétrica": [2],
                     "Engenharia Civil": [3],
                     "Ciência da Computação": [4, 8],
                     "Engenharia Mecânica": [7],
+                    "Física": [9],
                     "Engenharia de Controle": [10]
                 },
                 "Humanas": {
                     "Direito": [0, 11],
                     "História": [1, 8],
-                    "Letras": [2, 7],
-                    "Psicologia": [3, 9],
+                    "Letras": [2],
+                    "Psicologia": [3, 4, 9],
                     "Artes": [5],
                     "Antropologia": [6],
-                    "Comunicação": [10]
+                    "Comunicação": [10],
+                    "Ciências Sociais": [7]
                 }
-            }[perfil]
+            }[st.session_state.perfil]
             
             # Calcular pontuação para cada curso
             scores = {}
@@ -131,74 +144,82 @@ elif st.session_state.etapa == 2:
                            if caracteristicas[idx] in selecoes)
                 scores[curso] = score
             
-            # Curso ideal é o com maior pontuação
-            curso_ideal = max(scores.items(), key=lambda x: x[1])[0]
+            # Curso ideal é o com maior pontuação (desempate por ordem de preferência)
+            curso_ideal = max(scores.items(), key=lambda x: (x[1], -list(scores.keys()).index(x[0])))[0]
             
-            # --- VISUALIZAÇÃO ---
+            # --- VISUALIZAÇÃO MELHORADA ---
             # Gerar pontos para os cursos (3 por curso)
+            num_cursos = len(cursos_map)
             pontos_curso = {}
-            for curso in cursos_map.keys():
-                base_pos = list(cursos_map.keys()).index(curso)
+            for i, curso in enumerate(cursos_map.keys()):
+                # Posição base no eixo X + pequena variação
+                x_base = i
                 pontos_curso[curso] = np.column_stack([
-                    np.random.normal(base_pos, 0.1, size=3),
-                    np.random.normal(0, 0.1, size=3)
+                    np.random.normal(x_base, 0.1, size=3),  # Posição X
+                    np.random.normal(0, 0.1, size=3)        # Posição Y
                 ])
             
-            # Posição do usuário (próxima ao curso ideal)
-            user_pos = np.mean(pontos_curso[curso_ideal], axis=0) + np.array([0, 0.2])
+            # Posição do usuário (próxima ao centroide do curso ideal)
+            centroide = np.mean(pontos_curso[curso_ideal], axis=0)
+            user_pos = centroide + np.array([0, 0.2])  # Posiciona acima do cluster
             
             # Gráfico
             fig, ax = plt.subplots(figsize=(10, 6))
-            cores = plt.cm.tab10.colors
+            cores = plt.cm.get_cmap('tab10', num_cursos)
             
             for i, (curso, pontos) in enumerate(pontos_curso.items()):
                 ax.scatter(
                     pontos[:, 0], pontos[:, 1],
-                    color=cores[i],
+                    color=cores(i),
                     s=100,
                     label=f"{curso} ({scores[curso]})",
-                    alpha=0.7
+                    alpha=0.8,
+                    edgecolor='black'
                 )
             
+            # Plotar usuário
             ax.scatter(
                 user_pos[0], user_pos[1],
-                color=cores[list(cursos_map.keys()).index(curso_ideal)],
+                color=cores(list(cursos_map.keys()).index(curso_ideal)),
                 marker="*",
                 s=300,
                 edgecolor="black",
                 label=f"Você → {curso_ideal}"
             )
             
+            # Configurações do gráfico
             ax.set_title("Sua Proximidade com os Cursos", pad=20)
-            ax.set_xticks(range(len(cursos_map)))
-            ax.set_xticklabels(cursos_map.keys(), rotation=45)
+            ax.set_xticks(range(num_cursos))
+            ax.set_xticklabels(cursos_map.keys(), rotation=45, ha='right')
             ax.set_yticks([])
             ax.legend(bbox_to_anchor=(1.05, 1))
             ax.grid(True, linestyle="--", alpha=0.3)
             
             st.pyplot(fig)
             
-            # Resultado Final
+            # --- RESULTADO FINAL ---
             st.balloons()
+            
             emoji_curso = {
                 "Estatística": "📊", "Matemática": "🧮", 
                 "Engenharia Elétrica": "⚡", "Engenharia Civil": "🏗️",
                 "Ciência da Computação": "💻", "Engenharia Mecânica": "⚙️",
-                "Engenharia de Controle": "🤖", "Direito": "⚖️",
-                "História": "🏛️", "Letras": "📖", "Psicologia": "🧠",
-                "Artes": "🎨", "Antropologia": "🌍", "Comunicação": "💬"
+                "Física": "🔭", "Engenharia de Controle": "🤖",
+                "Direito": "⚖️", "História": "🏛️", "Letras": "📖",
+                "Psicologia": "🧠", "Artes": "🎨", "Antropologia": "🌍",
+                "Comunicação": "💬", "Ciências Sociais": "👥"
             }.get(curso_ideal, "🎓")
             
             st.success(f"""
             **Resultado Final:**
             
-            🎯 **Você tem perfil de {perfil}** e se encaixa melhor em:
+            🎯 **Você tem perfil de {st.session_state.perfil}** e se encaixa melhor em:
             {emoji_curso} **{curso_ideal}**
             
-            **Características selecionadas que mais combinam:**
+            **Características que mais combinam:**
             """)
             
-            # Corrigindo a lista de características correspondentes
+            # Listar apenas características que contribuíram para o curso
             caracs_correspondentes = [
                 carac for carac in selecoes 
                 if any(carac == caracteristicas[idx] for idx in cursos_map[curso_ideal])
@@ -209,4 +230,4 @@ elif st.session_state.etapa == 2:
 
     if st.button("↩️ Voltar para a Parte 1"):
         st.session_state.etapa = 1
-        st.rerun()   
+        st.rerun()    
