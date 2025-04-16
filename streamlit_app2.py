@@ -72,7 +72,7 @@ if st.button("Ver resultado"):
     ax.scatter(X_2d[-1, 0], X_2d[-1, 1], marker=simbolo, color=cor, s=300, edgecolor='black', label="Você")
 
     ax.set_title("Agrupamento dos perfis (Humanas x Exatas)")
-    ax.axis("off")
+    ax.axis("on")
     st.pyplot(fig)
 
     # Comentário final
