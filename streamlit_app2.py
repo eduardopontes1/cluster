@@ -45,11 +45,13 @@ if st.session_state.etapa == 1:
             X_novo = np.array(respostas).reshape(1, -1)
             grupo_humanas = np.array([
                 [1,0,1,0,1,0,1,0,1,0], [0,0,1,0,1,0,0,0,1,0],
-                [1,0,0,0,1,0,1,0,0,0]
+                [1,0,0,0,1,0,1,0,0,0], [1,0,1,0,0,0,1,0,1,0],
+                [0,0,1,0,1,0,1,0,0,0], [1,0,0,0,1,0,0,0,1,0]
             ])
             grupo_exatas = np.array([
                 [0,1,0,1,0,1,0,1,0,1], [1,1,0,1,0,1,0,0,0,1],
-                [0,1,0,0,0,1,0,1,0,0]
+                [0,1,0,0,0,1,0,1,0,0], [0,1,0,1,0,0,0,1,0,1],
+                [0,1,1,1,0,1,0,0,0,1], [0,1,0,1,0,1,0,1,0,0]
             ])
             X_treino = np.vstack((grupo_humanas, grupo_exatas))
             
@@ -131,7 +133,43 @@ elif st.session_state.etapa == 2:
         if len(selecoes) != 5:
             st.warning("Selecione exatamente 5 características!")
         else:
-            # --- CÁLCULO DO CURSO IDEAL COM K-MEANS ---
+            # --- PRIMEIRO GRÁFICO (Agrupamento Humanas/Exatas) ---
+            # Preparar dados para o gráfico inicial
+            fig1, ax1 = plt.subplots(figsize=(8, 5))
+            
+            # Gerar pontos aleatórios para cada grupo
+            np.random.seed(42)
+            
+            # Pontos para Humanas
+            humanas_x = np.random.normal(0, 0.15, 20)
+            humanas_y = np.random.normal(0, 0.15, 20)
+            
+            # Pontos para Exatas
+            exatas_x = np.random.normal(1, 0.15, 20)
+            exatas_y = np.random.normal(0, 0.15, 20)
+            
+            # Plotar grupos
+            ax1.scatter(humanas_x, humanas_y, color='blue', alpha=0.6, label='Perfis de Humanas', s=80)
+            ax1.scatter(exatas_x, exatas_y, color='green', alpha=0.6, label='Perfis de Exatas', s=80)
+            
+            # Plotar usuário
+            user_x = 0 if st.session_state.perfil == "Humanas" else 1
+            user_y = 0.3  # Posicionado acima dos outros pontos
+            ax1.scatter(user_x, user_y, s=200, marker="*", 
+                       color='red', label="Você", edgecolor='black')
+            
+            ax1.set_title("Seu Agrupamento na Primeira Etapa", pad=20)
+            ax1.set_xlim(-0.5, 1.5)
+            ax1.set_ylim(-0.5, 0.5)
+            ax1.set_xticks([0, 1])
+            ax1.set_xticklabels(["Humanas", "Exatas"])
+            ax1.set_yticks([])
+            ax1.legend(bbox_to_anchor=(1.05, 1))
+            ax1.grid(True, linestyle="--", alpha=0.3)
+            
+            st.pyplot(fig1)
+            
+            # --- SEGUNDO GRÁFICO (Cursos específicos) ---
             # Criar vetor do usuário (1 para características selecionadas)
             vetor_usuario = np.array([1 if carac in selecoes else 0 for carac in caracteristicas])
             
@@ -165,65 +203,44 @@ elif st.session_state.etapa == 2:
             from collections import Counter
             curso_ideal = Counter(cursos_no_cluster).most_common(1)[0][0]
             
-            # --- VISUALIZAÇÃO DA SEGUNDA ETAPA ---
             # Redução para 2D com PCA
             pca = PCA(n_components=2)
             dados_2d = pca.fit_transform(dados_treino)
             usuario_2d = pca.transform(vetor_usuario.reshape(1, -1))
             
-            fig1, ax1 = plt.subplots(figsize=(10, 6))
+            fig2, ax2 = plt.subplots(figsize=(10, 6))
             cores = plt.cm.get_cmap('tab10', len(cursos_map))
             
             # Mapeamento de curso para cor
             curso_para_indice = {curso: i for i, curso in enumerate(cursos_map.keys())}
             
-            # Plotar pontos dos cursos
+            # Plotar pontos dos cursos (evitando labels duplicadas)
+            handles = []
+            labels = []
             for i, (x, y) in enumerate(dados_2d):
                 curso = rotulos[i]
-                ax1.scatter(x, y, color=cores(curso_para_indice[curso]), 
-                          label=curso if i < len(cursos_map) else "", s=100, alpha=0.7)
+                color = cores(curso_para_indice[curso])
+                if curso not in labels:
+                    handle = ax2.scatter(x, y, color=color, label=curso, s=100, alpha=0.7)
+                    handles.append(handle)
+                    labels.append(curso)
+                else:
+                    ax2.scatter(x, y, color=color, s=100, alpha=0.7)
             
             # Plotar usuário
-            ax1.scatter(usuario_2d[0, 0], usuario_2d[0, 1], 
+            ax2.scatter(usuario_2d[0, 0], usuario_2d[0, 1], 
                       color=cores(curso_para_indice[curso_ideal]),
                       marker="*", s=300, edgecolor="black", label="Você")
             
-            ax1.set_title("Sua Proximidade com os Cursos", pad=20)
-            ax1.set_xlabel("Componente Principal 1")
-            ax1.set_ylabel("Componente Principal 2")
-            ax1.legend(bbox_to_anchor=(1.05, 1))
-            ax1.grid(True, linestyle="--", alpha=0.3)
-            
-            # --- VISUALIZAÇÃO DA PRIMEIRA ETAPA ---
-            # Preparar dados para o gráfico inicial
-            fig2, ax2 = plt.subplots(figsize=(8, 4))
-            
-            # Posições dos grupos
-            grupo_pos = {
-                "Humanas": (0, 0.1),
-                "Exatas": (1, 0.1)
-            }
-            
-            # Plotar grupos
-            for grupo, (x, y) in grupo_pos.items():
-                ax2.scatter(x, y, s=300, label=grupo, alpha=0.6)
-            
-            # Plotar usuário
-            user_x = 0 if st.session_state.perfil == "Humanas" else 1
-            ax2.scatter(user_x, 0.2, s=400, marker="*", 
-                       color='red', label="Você", edgecolor='black')
-            
-            ax2.set_title("Seu Agrupamento na Primeira Etapa")
-            ax2.set_xlim(-0.5, 1.5)
-            ax2.set_ylim(-0.1, 0.3)
-            ax2.set_xticks([0, 1])
-            ax2.set_xticklabels(["Humanas", "Exatas"])
-            ax2.set_yticks([])
-            ax2.legend()
+            ax2.set_title("Sua Proximidade com os Cursos", pad=20)
+            ax2.set_xlabel("Componente Principal 1")
+            ax2.set_ylabel("Componente Principal 2")
+            ax2.legend(handles=handles + [plt.Line2D([0], [0], marker='*', color='w', 
+                                                    markerfacecolor='black', markersize=15, 
+                                                    label='Você')],
+                     bbox_to_anchor=(1.05, 1))
             ax2.grid(True, linestyle="--", alpha=0.3)
             
-            # --- EXIBIR RESULTADOS ---
-            st.pyplot(fig1)
             st.pyplot(fig2)
             
             st.balloons()
@@ -263,4 +280,4 @@ elif st.session_state.etapa == 2:
 
     if st.button("↩️ Voltar para a Parte 1"):
         st.session_state.etapa = 1
-        st.rerun()     
+        st.rerun()        
