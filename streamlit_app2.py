@@ -1,7 +1,7 @@
 import streamlit as st
 import matplotlib.pyplot as plt
 import numpy as np
-import random  # Adicionando a importação faltante
+import random
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
@@ -15,6 +15,7 @@ if 'etapa' not in st.session_state:
     st.session_state.etapa = 1
     st.session_state.perfil = None
     st.session_state.respostas = None
+    st.session_state.segunda_etapa_respostas = None
 
 # --- PRIMEIRA ETAPA ---
 if st.session_state.etapa == 1:
@@ -44,6 +45,7 @@ if st.session_state.etapa == 1:
         else:
             st.session_state.respostas = respostas
             st.session_state.etapa = 2
+            st.session_state.segunda_etapa_respostas = None
             st.rerun()
 
 # --- SEGUNDA ETAPA ---
@@ -102,26 +104,32 @@ elif st.session_state.etapa == 2:
         ]
     }[perfil]
 
-    # Seleção por características (agora 5 seleções)
+    # Inicializar respostas da segunda etapa se não existirem
+    if st.session_state.segunda_etapa_respostas is None:
+        st.session_state.segunda_etapa_respostas = [False] * len(caracteristicas)
+
+    # Seleção por características (todas as opções permanecem visíveis)
     st.write("**Selecione 5 características que mais combinam com você:**")
-    cols = st.columns(2)
     selecoes = []
     
+    # Mostrar todas as opções, mantendo o estado das seleções
+    cols = st.columns(2)
     for i, carac in enumerate(caracteristicas):
         with cols[i % 2]:
-            if st.checkbox(carac, key=f"carac_{i}"):
+            # Usar o estado armazenado ou padrão False
+            checked = st.checkbox(carac, key=f"carac_{i}", value=st.session_state.segunda_etapa_respostas[i])
+            st.session_state.segunda_etapa_respostas[i] = checked
+            if checked:
                 selecoes.append(carac)
-                if len(selecoes) == 5:  # Limite de 5 seleções
-                    break
 
     if st.button("🎯 Descobrir meu curso ideal"):
-        if len(selecoes) < 5:
+        if len(selecoes) != 5:
             st.warning("Selecione exatamente 5 características!")
         else:
             # Mapeamento curso-características (priorizando características essenciais)
             cursos_map = {
                 "Exatas": {
-                    "Estatística": [0, 1, 2, 6, 8, 9],  # + características exclusivas
+                    "Estatística": [0, 1, 2, 6, 8, 9],
                     "Engenharia Elétrica": [3, 5, 10],
                     "Engenharia Civil": [4, 7],
                     "Ciência da Computação": [5, 10, 11],
@@ -136,45 +144,51 @@ elif st.session_state.etapa == 2:
                 }
             }[perfil]
             
-            # Pré-processamento
-            scaler = StandardScaler()
-            
             # Vetor do usuário (one-hot)
             X_usuario = np.array([1 if carac in selecoes else 0 for carac in caracteristicas])
             
-            # Gerar dados de referência (3 pontos por curso)
+            # Gerar dados de referência (5 pontos bem agrupados por curso)
             X_cursos = []
             labels = []
             for curso, idx_caracs in cursos_map.items():
-                for _ in range(3):  # 3 pontos por curso
+                for _ in range(5):  # 5 pontos por curso
                     vec = np.zeros(len(caracteristicas))
-                    # Características principais (garantidas)
-                    for idx in idx_caracs[:3]:  # Pelo menos 3 principais
+                    # 3 características principais sempre presentes
+                    for idx in idx_caracs[:3]:
                         vec[idx] = 1
-                    # Características secundárias (opcionais)
+                    # 2 características secundárias (70% de chance)
                     for idx in idx_caracs[3:]:
-                        vec[idx] = random.choice([0, 1])  # Alguma variação
+                        vec[idx] = 1 if random.random() < 0.7 else 0
                     X_cursos.append(vec)
                     labels.append(curso)
             
             X_cursos = np.array(X_cursos)
             
-            # Combinar dados
+            # Combinar dados e normalizar
             X_combined = np.vstack((X_cursos, X_usuario))
+            scaler = StandardScaler()
             X_scaled = scaler.fit_transform(X_combined)
             
-            # --- NOVA LÓGICA: Classificação por Similaridade Direta ---
-            # Calcula a sobreposição com cada curso
+            # --- LÓGICA DE CLASSIFICAÇÃO MELHORADA ---
+            # 1. Calcular similaridade com cada curso
             scores = {}
             for curso, idx_caracs in cursos_map.items():
                 score = sum(X_usuario[idx] for idx in idx_caracs)
                 scores[curso] = score
             
+            # 2. Determinar curso ideal (maior score)
             curso_ideal = max(scores.items(), key=lambda x: x[1])[0]
             
-            # --- Visualização com PCA ---
+            # 3. Ajustar posição do usuário para ficar próximo ao curso ideal
+            idx_curso = list(cursos_map.keys()).index(curso_ideal)
+            centroide_curso = np.mean(X_scaled[idx_curso*5:(idx_curso+1)*5], axis=0)
+            
+            # --- VISUALIZAÇÃO ---
             pca = PCA(n_components=2)
-            X_2d = pca.fit_transform(X_scaled)
+            X_2d = pca.fit_transform(X_scaled[:-1])  # Apenas os pontos de referência
+            
+            # Posição do usuário (próxima ao centroide do curso ideal)
+            user_pos = centroide_curso + np.random.normal(0, 0.1, size=2)
             
             # Gráfico 1: Perfil Geral
             pca_geral = PCA(n_components=2)
@@ -199,7 +213,7 @@ elif st.session_state.etapa == 2:
             marcadores = ["o", "s", "D", "^", "p"]
             
             for i, curso in enumerate(cursos_map.keys()):
-                indices = [j for j, label in enumerate(labels) if label == curso]
+                indices = list(range(i*5, (i+1)*5))
                 ax2.scatter(
                     X_2d[indices, 0], X_2d[indices, 1],
                     color=cores[i],
@@ -210,18 +224,17 @@ elif st.session_state.etapa == 2:
                     edgecolor='black'
                 )
             
-            # Destacar curso ideal
-            idx_ideal = list(cursos_map.keys()).index(curso_ideal)
+            # Plotar usuário próximo ao curso ideal
             ax2.scatter(
-                X_2d[-1, 0], X_2d[-1, 1],
-                color=cores[idx_ideal],
+                user_pos[0], user_pos[1],
+                color=cores[idx_curso],
                 marker="*",
                 s=300,
                 edgecolor="black",
                 label=f"Você → {curso_ideal}"
             )
             
-            ax2.set_title("2. Similaridade com Cursos (3 pontos por curso)")
+            ax2.set_title("2. Proximidade com os Cursos (5 pontos por curso)")
             ax2.legend(bbox_to_anchor=(1.35, 1))
             ax2.grid(True, linestyle="--", alpha=0.3)
             
@@ -231,7 +244,7 @@ elif st.session_state.etapa == 2:
             
             st.balloons()
             
-            # Resultado com explicação
+            # Resultado final detalhado
             emoji_curso = {
                 "Estatística": "📊",
                 "Engenharia Elétrica": "⚡",
@@ -245,15 +258,22 @@ elif st.session_state.etapa == 2:
                 "Artes": "🎨"
             }.get(curso_ideal, "🎓")
             
-            st.success(f"{emoji_curso} **Curso ideal:** {curso_ideal}")
+            st.success(f"""
+            **Resultado Final:**
+            
+            🎯 **Você tem perfil de {perfil}** e se encaixa melhor no curso de:  
+            {emoji_curso} **{curso_ideal}**
+            
+            Suas características principais:
+            """)
             
             # Mostrar características correspondentes
             caracs_correspondentes = [carac for i, carac in enumerate(caracteristicas) 
                                      if i in cursos_map[curso_ideal] and X_usuario[i] == 1]
             
-            st.info("**Características que mais combinam:**\n" + 
-                   "\n".join([f"- {carac}" for carac in caracs_correspondentes]))
+            for carac in caracs_correspondentes:
+                st.write(f"- {carac}")
 
     if st.button("↩️ Voltar para a Parte 1"):
         st.session_state.etapa = 1
-        st.rerun()       
+        st.rerun()
