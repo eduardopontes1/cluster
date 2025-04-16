@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
-
+   
 # Configuração da página
 st.set_page_config(page_title="Perfil Acadêmico", layout="centered")
 st.title("🔍 Descubra seu perfil Acadêmico")
