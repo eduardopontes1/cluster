@@ -26,8 +26,8 @@ for i in range(len(perguntas)):
     respostas.append(resposta)
 if st.button("Ver resultado"):
     X_novo = np.array(respostas).reshape(1, -1)
-    grupo_humanas = np.array([[0,0,0,0,0], [0,0,1,0,0], [0,1,0,0,0],[1,0,0,0,0],[0,0,0,0,1],[0,0,0,1,0],[1,1,0,0,0],[1,0,1,0,0],[1,0,0,1,0]])
-    grupo_exatas  = np.array([[1,1,1,1,1], [0,1,1,1,1], [1,0,1,1,1],[1,1,0,1,1],[1,1,1,0,1],[1,1,1,1,0],[0,0,1,1,1],[0,1,0,1,1],[0,1,1,0,1]])
+    grupo_humanas = np.array([[0,0,0,0,0], [0,0,1,0,0], [0,1,0,0,0],[1,0,0,0,0],[0,0,0,0,1],[0,0,0,1,0],[1,1,0,0,0]])
+    grupo_exatas  = np.array([[1,1,1,1,1], [0,1,1,1,1], [1,0,1,1,1],[1,1,0,1,1],[1,1,1,0,1],[1,1,1,1,0],[0,0,1,1,1]])
     X_treino = np.vstack((grupo_humanas, grupo_exatas))
     kmeans = KMeans(n_clusters=2, random_state=42, n_init=10)
     kmeans.fit(X_treino)
