@@ -45,7 +45,7 @@ if st.session_state.etapa == 1:
         else:
             st.session_state.respostas = respostas
             st.session_state.etapa = 2
-            st.session_state.segunda_etapa_respostas = None
+            st.session_state.segunda_etapa_respostas = [False] * 12  # 12 características
             st.rerun()
 
 # --- SEGUNDA ETAPA ---
@@ -104,20 +104,13 @@ elif st.session_state.etapa == 2:
         ]
     }[perfil]
 
-    # Inicializar respostas da segunda etapa se não existirem
-    if st.session_state.segunda_etapa_respostas is None:
-        st.session_state.segunda_etapa_respostas = [False] * len(caracteristicas)
-
-    # Seleção por características (todas as opções permanecem visíveis)
-    st.write("**Selecione 5 características que mais combinam com você:**")
-    selecoes = []
-    
-    # Mostrar todas as opções, mantendo o estado das seleções
+    # Atualizar seleções mantendo estado
     cols = st.columns(2)
+    selecoes = []
     for i, carac in enumerate(caracteristicas):
         with cols[i % 2]:
-            # Usar o estado armazenado ou padrão False
-            checked = st.checkbox(carac, key=f"carac_{i}", value=st.session_state.segunda_etapa_respostas[i])
+            checked = st.checkbox(carac, key=f"carac_{i}", 
+                                value=st.session_state.segunda_etapa_respostas[i])
             st.session_state.segunda_etapa_respostas[i] = checked
             if checked:
                 selecoes.append(carac)
@@ -126,7 +119,7 @@ elif st.session_state.etapa == 2:
         if len(selecoes) != 5:
             st.warning("Selecione exatamente 5 características!")
         else:
-            # Mapeamento curso-características (priorizando características essenciais)
+            # Mapeamento curso-características
             cursos_map = {
                 "Exatas": {
                     "Estatística": [0, 1, 2, 6, 8, 9],
@@ -144,65 +137,55 @@ elif st.session_state.etapa == 2:
                 }
             }[perfil]
             
-            # Vetor do usuário (one-hot)
+            # Vetor do usuário
             X_usuario = np.array([1 if carac in selecoes else 0 for carac in caracteristicas])
             
-            # Gerar dados de referência (5 pontos bem agrupados por curso)
+            # Gerar dados de referência (5 pontos por curso)
             X_cursos = []
             labels = []
             for curso, idx_caracs in cursos_map.items():
-                for _ in range(5):  # 5 pontos por curso
+                for _ in range(5):
                     vec = np.zeros(len(caracteristicas))
-                    # 3 características principais sempre presentes
-                    for idx in idx_caracs[:3]:
+                    for idx in idx_caracs[:3]:  # 3 principais sempre presentes
                         vec[idx] = 1
-                    # 2 características secundárias (70% de chance)
-                    for idx in idx_caracs[3:]:
+                    for idx in idx_caracs[3:]:  # Outras com 70% de chance
                         vec[idx] = 1 if random.random() < 0.7 else 0
                     X_cursos.append(vec)
                     labels.append(curso)
             
             X_cursos = np.array(X_cursos)
             
-            # Combinar dados e normalizar
-            X_combined = np.vstack((X_cursos, X_usuario))
+            # Normalização
             scaler = StandardScaler()
+            X_combined = np.vstack((X_cursos, X_usuario))
             X_scaled = scaler.fit_transform(X_combined)
             
-            # --- LÓGICA DE CLASSIFICAÇÃO MELHORADA ---
-            # 1. Calcular similaridade com cada curso
-            scores = {}
-            for curso, idx_caracs in cursos_map.items():
-                score = sum(X_usuario[idx] for idx in idx_caracs)
-                scores[curso] = score
-            
-            # 2. Determinar curso ideal (maior score)
+            # --- NOVA LÓGICA DE CLASSIFICAÇÃO ---
+            # Calcular scores de similaridade
+            scores = {curso: sum(X_usuario[idx] for idx in idx_caracs) 
+                     for curso, idx_caracs in cursos_map.items()}
             curso_ideal = max(scores.items(), key=lambda x: x[1])[0]
             
-            # 3. Ajustar posição do usuário para ficar próximo ao curso ideal
-            idx_curso = list(cursos_map.keys()).index(curso_ideal)
-            centroide_curso = np.mean(X_scaled[idx_curso*5:(idx_curso+1)*5], axis=0)
-            
-            # --- VISUALIZAÇÃO ---
+            # PCA para visualização
             pca = PCA(n_components=2)
-            X_2d = pca.fit_transform(X_scaled[:-1])  # Apenas os pontos de referência
+            X_2d = pca.fit_transform(X_scaled[:-1])  # Apenas pontos de referência
             
             # Posição do usuário (próxima ao centroide do curso ideal)
-            user_pos = centroide_curso + np.random.normal(0, 0.1, size=2)
+            idx_curso = list(cursos_map.keys()).index(curso_ideal)
+            centroide = np.mean(X_2d[idx_curso*5:(idx_curso+1)*5], axis=0)
+            user_pos = centroide + np.random.normal(0, 0.1, size=2)
             
+            # --- GRÁFICOS ---
             # Gráfico 1: Perfil Geral
-            pca_geral = PCA(n_components=2)
-            X_2d_geral = pca_geral.fit_transform(np.vstack((X_treino, X_novo)))
-            
             fig1, ax1 = plt.subplots(figsize=(8, 4))
+            X_2d_geral = PCA(n_components=2).fit_transform(np.vstack((X_treino, X_novo)))
             for i in range(len(X_treino)):
-                ax1.scatter(
-                    X_2d_geral[i, 0], X_2d_geral[i, 1],
-                    color="blue" if i < len(grupo_humanas) else "red",
-                    marker="o" if i < len(grupo_humanas) else "s",
-                    alpha=0.6
-                )
-            ax1.scatter(X_2d_geral[-1, 0], X_2d_geral[-1, 1], color="gold", marker="*", s=200, label="Você")
+                ax1.scatter(X_2d_geral[i, 0], X_2d_geral[i, 1],
+                           color="blue" if i < len(grupo_humanas) else "red",
+                           marker="o" if i < len(grupo_humanas) else "s",
+                           alpha=0.6)
+            ax1.scatter(X_2d_geral[-1, 0], X_2d_geral[-1, 1], color="gold", 
+                       marker="*", s=200, label="Você")
             ax1.set_title("1. Seu Perfil Geral (Humanas vs Exatas)")
             ax1.legend()
             ax1.grid(True, linestyle="--", alpha=0.3)
@@ -210,71 +193,49 @@ elif st.session_state.etapa == 2:
             # Gráfico 2: Cursos Específicos
             fig2, ax2 = plt.subplots(figsize=(10, 6))
             cores = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#9B59B6", "#2ECC71"]
-            marcadores = ["o", "s", "D", "^", "p"]
             
             for i, curso in enumerate(cursos_map.keys()):
-                indices = list(range(i*5, (i+1)*5))
-                ax2.scatter(
-                    X_2d[indices, 0], X_2d[indices, 1],
-                    color=cores[i],
-                    marker=marcadores[i],
-                    s=100,
-                    label=f"{curso} (Score: {scores[curso]})",
-                    alpha=0.8,
-                    edgecolor='black'
-                )
+                indices = range(i*5, (i+1)*5)
+                ax2.scatter(X_2d[indices, 0], X_2d[indices, 1],
+                           color=cores[i], marker=["o", "s", "D", "^", "p"][i],
+                           s=100, label=f"{curso} (Score: {scores[curso]})",
+                           alpha=0.8, edgecolor='black')
             
-            # Plotar usuário próximo ao curso ideal
-            ax2.scatter(
-                user_pos[0], user_pos[1],
-                color=cores[idx_curso],
-                marker="*",
-                s=300,
-                edgecolor="black",
-                label=f"Você → {curso_ideal}"
-            )
+            ax2.scatter(user_pos[0], user_pos[1],
+                       color=cores[idx_curso], marker="*",
+                       s=300, edgecolor="black",
+                       label=f"Você → {curso_ideal}")
             
-            ax2.set_title("2. Proximidade com os Cursos (5 pontos por curso)")
+            ax2.set_title("2. Proximidade com os Cursos")
             ax2.legend(bbox_to_anchor=(1.35, 1))
             ax2.grid(True, linestyle="--", alpha=0.3)
             
-            # Exibir gráficos
             st.pyplot(fig1)
             st.pyplot(fig2)
             
+            # Resultado Final
             st.balloons()
-            
-            # Resultado final detalhado
             emoji_curso = {
-                "Estatística": "📊",
-                "Engenharia Elétrica": "⚡",
-                "Engenharia Civil": "🏗️",
-                "Ciência da Computação": "💻",
-                "Matemática Aplicada": "🧮",
-                "Direito": "⚖️",
-                "História": "🏛️",
-                "Letras": "📖",
-                "Psicologia": "🧠",
-                "Artes": "🎨"
+                "Estatística": "📊", "Engenharia Elétrica": "⚡", 
+                "Engenharia Civil": "🏗️", "Ciência da Computação": "💻",
+                "Matemática Aplicada": "🧮", "Direito": "⚖️",
+                "História": "🏛️", "Letras": "📖",
+                "Psicologia": "🧠", "Artes": "🎨"
             }.get(curso_ideal, "🎓")
             
             st.success(f"""
             **Resultado Final:**
             
-            🎯 **Você tem perfil de {perfil}** e se encaixa melhor no curso de:  
+            🎯 **Você tem perfil de {perfil}** e se encaixa melhor em:
             {emoji_curso} **{curso_ideal}**
             
-            Suas características principais:
+            **Características que mais combinam:**
             """)
             
-            # Mostrar características correspondentes
-            caracs_correspondentes = [carac for i, carac in enumerate(caracteristicas) 
-                                     if i in cursos_map[curso_ideal] and X_usuario[i] == 1]
-            
-            for carac in caracs_correspondentes:
-                st.write(f"- {carac}")
+            for carac in selecoes:
+                if carac in [caracteristicas[i] for i in cursos_map[curso_ideal]]:
+                    st.write(f"- {carac}")
 
     if st.button("↩️ Voltar para a Parte 1"):
         st.session_state.etapa = 1
         st.rerun()
-   
