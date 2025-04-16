@@ -58,18 +58,18 @@ elif st.session_state.etapa == 2:
     # Características por área (12 opções) - Definições mais específicas
     caracteristicas = {
         "Exatas": [
-            "📊 Criar modelos estatísticos complexos",  # Exclusivo para Estatística
-            "🧮 Desenvolver teorias matemáticas abstratas",  # Matemática
-            "⚡ Projetar circuitos elétricos complexos",  # Eng. Elétrica
-            "🏗️ Calcular estruturas de concreto armado",  # Eng. Civil
-            "💻 Desenvolver algoritmos de IA",  # Ciência da Computação
-            "📈 Analisar tendências de mercado",  # Estatística
-            "🔢 Resolver equações diferenciais",  # Matemática
-            "📐 Projetar sistemas mecânicos",  # Eng. Mecânica
-            "🌐 Otimizar redes de computadores",  # Ciência da Computação
-            "🧪 Simular experimentos físicos",  # Engenharias
-            "🤖 Programar robôs autônomos",  # Eng. Controle/Automação
-            "📉 Visualizar dados multivariados"  # Estatística
+            "📊 Criar modelos estatísticos complexos",
+            "🧮 Desenvolver teorias matemáticas abstratas",
+            "⚡ Projetar circuitos elétricos complexos",
+            "🏗️ Calcular estruturas de concreto armado",
+            "💻 Desenvolver algoritmos de IA",
+            "📈 Analisar tendências de mercado",
+            "🔢 Resolver equações diferenciais",
+            "📐 Projetar sistemas mecânicos",
+            "🌐 Otimizar redes de computadores",
+            "🧪 Simular experimentos físicos",
+            "🤖 Programar robôs autônomos",
+            "📉 Visualizar dados multivariados"
         ],
         "Humanas": [
             "⚖️ Argumentar casos jurídicos complexos",
@@ -105,7 +105,7 @@ elif st.session_state.etapa == 2:
             # Mapeamento curso-características (mais específico)
             cursos_map = {
                 "Exatas": {
-                    "Estatística": [0, 5, 11],  # Características exclusivas
+                    "Estatística": [0, 5, 11],
                     "Matemática": [1, 6],
                     "Engenharia Elétrica": [2],
                     "Engenharia Civil": [3],
@@ -138,11 +138,14 @@ elif st.session_state.etapa == 2:
             # Gerar pontos para os cursos (3 por curso)
             pontos_curso = {}
             for curso in cursos_map.keys():
-                pontos_curso[curso] = np.random.normal(
-                    list(cursos_map.keys()).index(curso), 0.1, size=(3, 2))
+                base_pos = list(cursos_map.keys()).index(curso)
+                pontos_curso[curso] = np.column_stack([
+                    np.random.normal(base_pos, 0.1, size=3),
+                    np.random.normal(0, 0.1, size=3)
+                ])
             
             # Posição do usuário (próxima ao curso ideal)
-            user_pos = np.mean(pontos_curso[curso_ideal], axis=0) + np.random.normal(0, 0.1, size=2)
+            user_pos = np.mean(pontos_curso[curso_ideal], axis=0) + np.array([0, 0.2])
             
             # Gráfico
             fig, ax = plt.subplots(figsize=(10, 6))
@@ -153,7 +156,7 @@ elif st.session_state.etapa == 2:
                     pontos[:, 0], pontos[:, 1],
                     color=cores[i],
                     s=100,
-                    label=f"{curso} (Score: {scores[curso]})",
+                    label=f"{curso} ({scores[curso]})",
                     alpha=0.7
                 )
             
@@ -167,7 +170,8 @@ elif st.session_state.etapa == 2:
             )
             
             ax.set_title("Sua Proximidade com os Cursos", pad=20)
-            ax.set_xticks([])
+            ax.set_xticks(range(len(cursos_map)))
+            ax.set_xticklabels(cursos_map.keys(), rotation=45)
             ax.set_yticks([])
             ax.legend(bbox_to_anchor=(1.05, 1))
             ax.grid(True, linestyle="--", alpha=0.3)
@@ -194,13 +198,15 @@ elif st.session_state.etapa == 2:
             **Características selecionadas que mais combinam:**
             """)
             
+            # Corrigindo a lista de características correspondentes
             caracs_correspondentes = [
                 carac for carac in selecoes 
-                if carac in [caracteristicas[i] for i in cursos_map[curso_ideal]]
+                if any(carac == caracteristicas[idx] for idx in cursos_map[curso_ideal])
+            ]
             
             for carac in caracs_correspondentes:
                 st.write(f"- {carac}")
 
     if st.button("↩️ Voltar para a Parte 1"):
         st.session_state.etapa = 1
-        st.rerun()      
+        st.rerun()   
