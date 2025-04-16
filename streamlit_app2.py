@@ -1,8 +1,8 @@
 import streamlit as st
 import matplotlib.pyplot as plt
+import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
-import numpy as np
 from sklearn.preprocessing import StandardScaler
 
 # Configuração da página
@@ -51,11 +51,13 @@ elif st.session_state.etapa == 2:
     X_novo = np.array(st.session_state.respostas).reshape(1, -1)
     grupo_humanas = np.array([
         [1,0,1,0,1,0,1,0,1,0], [0,0,1,0,1,0,0,0,1,0],
-        [1,0,0,0,1,0,1,0,0,0]
+        [1,0,0,0,1,0,1,0,0,0], [0,0,1,0,0,0,1,0,1,0],
+        [1,0,1,0,0,0,0,0,1,0]
     ])
     grupo_exatas = np.array([
         [0,1,0,1,0,1,0,1,0,1], [1,1,0,1,0,1,0,0,0,1],
-        [0,1,0,0,0,1,0,1,0,0]
+        [0,1,0,0,0,1,0,1,0,0], [1,0,0,1,0,1,0,1,0,0],
+        [0,1,0,1,0,0,0,1,0,1]
     ])
     X_treino = np.vstack((grupo_humanas, grupo_exatas))
     
@@ -67,28 +69,40 @@ elif st.session_state.etapa == 2:
     st.divider()
     st.subheader("📌 **Parte 2/2:** Selecione as características que mais combinam com você")
     
-    # Características por área (sem revelar cursos)
+    # Características por área (12 opções)
     caracteristicas = {
         "Exatas": [
-            "📊 Analisar dados e estatísticas",
-            "🧮 Resolver problemas matemáticos",
-            "📈 Trabalhar com probabilidades",
-            "⚡ Projetar sistemas elétricos",
-            "🏗️ Projetar estruturas e construções",
-            "💻 Desenvolver algoritmos"
+            "📊 Analisar dados estatísticos",
+            "🧮 Resolver problemas matemáticos complexos",
+            "📈 Trabalhar com probabilidades e previsões",
+            "⚡ Projetar sistemas elétricos/circuitos",
+            "🏗️ Calcular estruturas e resistência de materiais",
+            "💻 Programar algoritmos complexos",
+            "🔢 Desenvolver modelos matemáticos",
+            "📐 Realizar cálculos estruturais precisos",
+            "📉 Interpretar gráficos e tendências",
+            "🧪 Realizar experimentos quantitativos",
+            "🤖 Trabalhar com inteligência artificial",
+            "🌐 Desenvolver sistemas computacionais"
         ],
         "Humanas": [
             "⚖️ Argumentar e interpretar leis",
             "📜 Analisar documentos históricos",
-            "📖 Escrever textos criativos",
-            "🧠 Entender comportamentos humanos",
+            "📖 Escrever textos criativos/literários",
+            "🧠 Estudar comportamentos humanos",
             "🗣️ Mediar conflitos e debates",
-            "🎨 Analisar expressões artísticas"
+            "🎨 Analisar expressões artísticas",
+            "🌍 Estudar culturas e sociedades",
+            "✍️ Produzir conteúdo escrito",
+            "🏛️ Interpretar contextos históricos",
+            "👥 Trabalhar com dinâmicas de grupo",
+            "💬 Desenvolver comunicação interpessoal",
+            "📝 Redigir documentos formais"
         ]
     }[perfil]
 
-    # Seleção por características
-    st.write("**Selecione 3 características:**")
+    # Seleção por características (agora 5 seleções)
+    st.write("**Selecione 5 características que mais combinam com você:**")
     cols = st.columns(2)
     selecoes = []
     
@@ -96,26 +110,28 @@ elif st.session_state.etapa == 2:
         with cols[i % 2]:
             if st.checkbox(carac, key=f"carac_{i}"):
                 selecoes.append(carac)
-                if len(selecoes) >= 3:
-                    break  # Limita a 3 seleções
+                if len(selecoes) == 5:  # Limite de 5 seleções
+                    break
 
     if st.button("🎯 Descobrir meu curso ideal"):
-        if len(selecoes) < 3:
-            st.warning("Selecione exatamente 3 características!")
+        if len(selecoes) < 5:
+            st.warning("Selecione exatamente 5 características!")
         else:
-            # Mapeamento curso-características (oculto)
+            # Mapeamento curso-características (priorizando características essenciais)
             cursos_map = {
                 "Exatas": {
-                    "Estatística": [0, 1, 2],  # Índices das características
-                    "Engenharia Elétrica": [3],
-                    "Engenharia Civil": [4],
-                    "Ciência da Computação": [5]
+                    "Estatística": [0, 1, 2, 6, 8, 9],  # + características exclusivas
+                    "Engenharia Elétrica": [3, 5, 10],
+                    "Engenharia Civil": [4, 7],
+                    "Ciência da Computação": [5, 10, 11],
+                    "Matemática Aplicada": [1, 2, 6]
                 },
                 "Humanas": {
-                    "Direito": [0],
-                    "História": [1],
-                    "Letras": [2],
-                    "Psicologia": [3]
+                    "Direito": [0, 7, 11],
+                    "História": [1, 8],
+                    "Letras": [2, 3, 7],
+                    "Psicologia": [3, 4, 9],
+                    "Artes": [5, 6]
                 }
             }[perfil]
             
@@ -125,18 +141,18 @@ elif st.session_state.etapa == 2:
             # Vetor do usuário (one-hot)
             X_usuario = np.array([1 if carac in selecoes else 0 for carac in caracteristicas])
             
-            # Gerar 3 pontos sintéticos por curso (bem definidos)
+            # Gerar dados de referência (3 pontos por curso)
             X_cursos = []
             labels = []
             for curso, idx_caracs in cursos_map.items():
                 for _ in range(3):  # 3 pontos por curso
                     vec = np.zeros(len(caracteristicas))
-                    # Características principais sempre presentes
-                    for idx in idx_caracs:
+                    # Características principais (garantidas)
+                    for idx in idx_caracs[:3]:  # Pelo menos 3 principais
                         vec[idx] = 1
-                    # Adicionar pequena variação
-                    if len(idx_caracs) < len(caracteristicas):
-                        vec[np.random.choice([i for i in range(len(caracteristicas)) if i not in idx_caracs])] = 1
+                    # Características secundárias (opcionais)
+                    for idx in idx_caracs[3:]:
+                        vec[idx] = random.choice([0, 1])  # Alguma variação
                     X_cursos.append(vec)
                     labels.append(curso)
             
@@ -146,23 +162,20 @@ elif st.session_state.etapa == 2:
             X_combined = np.vstack((X_cursos, X_usuario))
             X_scaled = scaler.fit_transform(X_combined)
             
-            # K-means ajustado (agora com inicialização personalizada)
-            kmeans = KMeans(
-                n_clusters=len(cursos_map),
-                init=X_scaled[:len(cursos_map)],  # Inicializa nos centros dos cursos
-                random_state=42,
-                n_init=1
-            ).fit(X_scaled[:-1])  # Treina apenas nos dados de referência
+            # --- NOVA LÓGICA: Classificação por Similaridade Direta ---
+            # Calcula a sobreposição com cada curso
+            scores = {}
+            for curso, idx_caracs in cursos_map.items():
+                score = sum(X_usuario[idx] for idx in idx_caracs)
+                scores[curso] = score
             
-            # Determinar curso por proximidade ao centróide
-            distancias = kmeans.transform(X_scaled[-1].reshape(1, -1))
-            curso_ideal = list(cursos_map.keys())[np.argmin(distancias)]
+            curso_ideal = max(scores.items(), key=lambda x: x[1])[0]
             
-            # PCA para visualização
+            # --- Visualização com PCA ---
             pca = PCA(n_components=2)
             X_2d = pca.fit_transform(X_scaled)
             
-            # --- Gráfico 1: Perfil Geral ---
+            # Gráfico 1: Perfil Geral
             pca_geral = PCA(n_components=2)
             X_2d_geral = pca_geral.fit_transform(np.vstack((X_treino, X_novo)))
             
@@ -179,10 +192,10 @@ elif st.session_state.etapa == 2:
             ax1.legend()
             ax1.grid(True, linestyle="--", alpha=0.3)
             
-            # --- Gráfico 2: Cursos Específicos ---
-            fig2, ax2 = plt.subplots(figsize=(8, 6))
-            cores = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#9B59B6"]
-            marcadores = ["o", "s", "D", "^"]
+            # Gráfico 2: Cursos Específicos
+            fig2, ax2 = plt.subplots(figsize=(10, 6))
+            cores = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#9B59B6", "#2ECC71"]
+            marcadores = ["o", "s", "D", "^", "p"]
             
             for i, curso in enumerate(cursos_map.keys()):
                 indices = [j for j, label in enumerate(labels) if label == curso]
@@ -191,14 +204,24 @@ elif st.session_state.etapa == 2:
                     color=cores[i],
                     marker=marcadores[i],
                     s=100,
-                    label=curso,
+                    label=f"{curso} (Score: {scores[curso]})",
                     alpha=0.8,
                     edgecolor='black'
                 )
             
-            ax2.scatter(X_2d[-1, 0], X_2d[-1, 1], color="gold", marker="*", s=300, label="Você")
-            ax2.set_title("2. Proximidade aos Cursos (3 pontos por curso)")
-            ax2.legend(bbox_to_anchor=(1.05, 1))
+            # Destacar curso ideal
+            idx_ideal = list(cursos_map.keys()).index(curso_ideal)
+            ax2.scatter(
+                X_2d[-1, 0], X_2d[-1, 1],
+                color=cores[idx_ideal],
+                marker="*",
+                s=300,
+                edgecolor="black",
+                label=f"Você → {curso_ideal}"
+            )
+            
+            ax2.set_title("2. Similaridade com Cursos (3 pontos por curso)")
+            ax2.legend(bbox_to_anchor=(1.35, 1))
             ax2.grid(True, linestyle="--", alpha=0.3)
             
             # Exibir gráficos
@@ -207,24 +230,29 @@ elif st.session_state.etapa == 2:
             
             st.balloons()
             
-            # Resultado com descrição
+            # Resultado com explicação
             emoji_curso = {
                 "Estatística": "📊",
                 "Engenharia Elétrica": "⚡",
                 "Engenharia Civil": "🏗️",
                 "Ciência da Computação": "💻",
+                "Matemática Aplicada": "🧮",
                 "Direito": "⚖️",
                 "História": "🏛️",
                 "Letras": "📖",
-                "Psicologia": "🧠"
+                "Psicologia": "🧠",
+                "Artes": "🎨"
             }.get(curso_ideal, "🎓")
             
             st.success(f"{emoji_curso} **Curso ideal:** {curso_ideal}")
             
-            # Explicação da decisão
-            st.info(f"**Por que {curso_ideal}?** Você selecionou características que são essenciais para este curso:" + 
-                   "".join([f"\n- {carac}" for carac in selecoes if carac in [caracteristicas[i] for i in cursos_map[curso_ideal]]]))
+            # Mostrar características correspondentes
+            caracs_correspondentes = [carac for i, carac in enumerate(caracteristicas) 
+                                     if i in cursos_map[curso_ideal] and X_usuario[i] == 1]
+            
+            st.info("**Características que mais combinam:**\n" + 
+                   "\n".join([f"- {carac}" for carac in caracs_correspondentes]))
 
     if st.button("↩️ Voltar para a Parte 1"):
         st.session_state.etapa = 1
-        st.rerun()   
+        st.rerun()      
