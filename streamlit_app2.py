@@ -4,6 +4,7 @@ from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 import numpy as np
 from sklearn.preprocessing import StandardScaler
+import random
 
 # Configuração da página
 st.set_page_config(page_title="Perfil Acadêmico", layout="centered")
@@ -13,6 +14,7 @@ st.title("🔍 Descubra seu perfil Acadêmico")
 if 'etapa' not in st.session_state:
     st.session_state.etapa = 1
     st.session_state.perfil = None
+    st.session_state.respostas = None
 
 # --- PRIMEIRA ETAPA ---
 if st.session_state.etapa == 1:
@@ -40,39 +42,47 @@ if st.session_state.etapa == 1:
         if sum(respostas) < 3:
             st.warning("Selecione pelo menos 3 conteúdos!")
         else:
-            X_novo = np.array(respostas).reshape(1, -1)
-            grupo_humanas = np.array([
-                [1,0,1,0,1,0,1,0,1,0], [0,0,1,0,1,0,0,0,1,0],
-                [1,0,0,0,1,0,1,0,0,0]
-            ])
-            grupo_exatas = np.array([
-                [0,1,0,1,0,1,0,1,0,1], [1,1,0,1,0,1,0,0,0,1],
-                [0,1,0,0,0,1,0,1,0,0]
-            ])
-            X_treino = np.vstack((grupo_humanas, grupo_exatas))
-            
-            kmeans = KMeans(n_clusters=2, random_state=42, n_init=10).fit(X_treino)
-            st.session_state.perfil = "Humanas" if kmeans.predict(X_novo)[0] == 0 else "Exatas"
+            st.session_state.respostas = respostas
             st.session_state.etapa = 2
             st.rerun()
 
 # --- SEGUNDA ETAPA ---
 elif st.session_state.etapa == 2:
-    st.success(f"Perfil principal: **{st.session_state.perfil}**")
+    # Classificação inicial (Humanas/Exatas)
+    X_novo = np.array(st.session_state.respostas).reshape(1, -1)
+    grupo_humanas = np.array([
+        [1,0,1,0,1,0,1,0,1,0], [0,0,1,0,1,0,0,0,1,0],
+        [1,0,0,0,1,0,1,0,0,0], [0,0,1,0,0,0,1,0,1,0],
+        [1,0,1,0,0,0,0,0,1,0]
+    ])
+    grupo_exatas = np.array([
+        [0,1,0,1,0,1,0,1,0,1], [1,1,0,1,0,1,0,0,0,1],
+        [0,1,0,0,0,1,0,1,0,0], [1,0,0,1,0,1,0,1,0,0],
+        [0,1,0,1,0,0,0,1,0,1]
+    ])
+    X_treino = np.vstack((grupo_humanas, grupo_exatas))
+    
+    kmeans_geral = KMeans(n_clusters=2, random_state=42, n_init=10).fit(X_treino)
+    perfil = "Humanas" if kmeans_geral.predict(X_novo)[0] == 0 else "Exatas"
+    st.session_state.perfil = perfil
+
+    st.success(f"Perfil principal: **{perfil}**")
     st.divider()
     st.subheader("📌 **Parte 2/2:** Selecione as características que mais combinam com você")
     
-    # Dicionário de características por curso (sem mostrar os nomes dos cursos)
+    # Características por área (sem revelar os cursos)
     caracteristicas = {
         "Exatas": [
             "📊 Analisar dados e estatísticas",
             "🧮 Resolver problemas matemáticos complexos",
             "📈 Trabalhar com probabilidades e previsões",
             "⚡ Projetar sistemas elétricos e circuitos",
-            "🏗️ Projetar estruturas e construções",  # Engenharia Civil
+            "🏗️ Projetar estruturas e construções",
             "💻 Desenvolver algoritmos e programas",
             "🔢 Criar modelos matemáticos avançados",
-            "🌉 Calcular cargas e resistências de materiais"  # Engenharia Civil
+            "🌉 Calcular cargas e resistências de materiais",
+            "🔧 Projetar máquinas e sistemas mecânicos",
+            "📐 Fazer cálculos estruturais precisos"
         ],
         "Humanas": [
             "⚖️ Argumentar e interpretar leis",
@@ -82,11 +92,13 @@ elif st.session_state.etapa == 2:
             "🗣️ Mediar conflitos e debates",
             "🎨 Analisar expressões artísticas",
             "🌍 Estudar culturas e sociedades",
-            "✍️ Produzir conteúdo literário"
+            "✍️ Produzir conteúdo literário",
+            "🏛️ Interpretar contextos históricos",
+            "👥 Trabalhar com dinâmicas de grupo"
         ]
-    }[st.session_state.perfil]
+    }[perfil]
 
-    # Seleção por características (agrupadas em colunas)
+    # Seleção por características
     st.write("**Selecione 3 a 5 características:**")
     cols = st.columns(2)
     selecoes = []
@@ -100,101 +112,146 @@ elif st.session_state.etapa == 2:
         if len(selecoes) < 3:
             st.warning("Selecione pelo menos 3 características!")
         else:
-            # Mapeamento curso-características (agora oculto ao usuário)
+            # Mapeamento curso-características (oculto)
             cursos_map = {
                 "Exatas": {
-                    "Estatística": [0, 1, 2],  # Índices das características
+                    "Estatística": [0, 1, 2, 6],
                     "Engenharia Elétrica": [3],
-                    "Engenharia Civil": [4, 7],  # Adicionado
+                    "Engenharia Civil": [4, 7, 9],
                     "Ciência da Computação": [5],
-                    "Matemática": [6]
+                    "Engenharia Mecânica": [8]
                 },
                 "Humanas": {
                     "Direito": [0],
-                    "História": [1],
+                    "História": [1, 8],
                     "Letras": [2, 7],
-                    "Psicologia": [3],
+                    "Psicologia": [3, 9],
                     "Artes": [5]
                 }
-            }[st.session_state.perfil]
+            }[perfil]
             
             # Pré-processamento
             scaler = StandardScaler()
             
-            # Vetor do usuário (one-hot)
+            # Vetor do usuário
             X_usuario = np.array([1 if carac in selecoes else 0 for carac in caracteristicas])
             
-            # Matriz de referência (cursos)
+            # Gerar dados sintéticos para cada curso (simulando "pessoas" em cada curso)
             X_cursos = []
+            labels = []
             for curso, idx_caracs in cursos_map.items():
-                vec = np.zeros(len(caracteristicas))
-                for idx in idx_caracs:
-                    vec[idx] = 1
-                X_cursos.append(vec)
+                # Gerar 5-10 perfis sintéticos para cada curso
+                for _ in range(random.randint(5, 10)):
+                    vec = np.zeros(len(caracteristicas))
+                    # Garantir que as características principais estejam sempre presentes
+                    for idx in idx_caracs:
+                        vec[idx] = 1
+                    # Adicionar algumas variações aleatórias
+                    for _ in range(random.randint(1, 3)):
+                        vec[random.choice(idx_caracs)] = 0  # Remover alguma característica
+                        vec[random.randint(0, len(caracteristicas)-1)] = 1  # Adicionar aleatório
+                    X_cursos.append(vec)
+                    labels.append(curso)
+            
             X_cursos = np.array(X_cursos)
             
-            # Normalização
+            # Adicionar o usuário
             X_combined = np.vstack((X_cursos, X_usuario))
             X_scaled = scaler.fit_transform(X_combined)
             
-            # K-means com inicialização personalizada
+            # K-means ajustado
             kmeans = KMeans(
                 n_clusters=len(cursos_map),
-                init=X_scaled[:len(cursos_map)],  # Inicializa com os centros dos cursos
+                init='k-means++',
                 random_state=42,
-                n_init=1
-            ).fit(X_scaled[:-1])  # Ajusta apenas nos dados de referência
+                n_init=20
+            ).fit(X_scaled[:-1])  # Treina apenas nos dados sintéticos
             
             # Predição
             cluster_usuario = kmeans.predict(X_scaled[-1].reshape(1, -1))[0]
             curso_ideal = list(cursos_map.keys())[cluster_usuario]
             
-            # PCA para visualização (2D)
+            # PCA para visualização
             pca = PCA(n_components=2)
             X_2d = pca.fit_transform(X_scaled)
             
-            # Plot
-            fig, ax = plt.subplots(figsize=(10, 6))
-            cores = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#9B59B6", "#2ECC71"]
-            formas = ["o", "s", "D", "^", "p"]
+            # --- Gráfico 1: Perfil Geral (Humanas/Exatas) ---
+            fig1, ax1 = plt.subplots(figsize=(10, 5))
             
-            # Plot cursos de referência
-            for i in range(len(X_cursos)):
-                ax.scatter(
-                    X_2d[i, 0], X_2d[i, 1],
-                    marker=formas[i],
-                    color=cores[i],
-                    s=200,
-                    edgecolor="black",
-                    label=list(cursos_map.keys())[i]
+            # Transformar os dados da primeira etapa
+            X_vis_geral = np.vstack((X_treino, X_novo))
+            pca_geral = PCA(n_components=2)
+            X_2d_geral = pca_geral.fit_transform(X_vis_geral)
+            
+            # Plot dados de treino
+            for i in range(len(X_treino)):
+                cluster = kmeans_geral.labels_[i] if i < len(X_treino) else -1
+                ax1.scatter(
+                    X_2d_geral[i, 0], X_2d_geral[i, 1],
+                    marker="o" if i < len(grupo_humanas) else "s",
+                    color="blue" if i < len(grupo_humanas) else "red",
+                    alpha=0.6
                 )
             
             # Plot usuário
-            ax.scatter(
-                X_2d[-1, 0], X_2d[-1, 1],
+            ax1.scatter(
+                X_2d_geral[-1, 0], X_2d_geral[-1, 1],
                 marker="*",
-                color="gold",
-                s=400,
+                color="green",
+                s=200,
                 edgecolor="black",
                 label="Você"
             )
             
-            ax.set_title("Seu perfil comparado aos cursos", fontsize=14)
-            ax.set_xlabel("Componente Principal 1", fontsize=10)
-            ax.set_ylabel("Componente Principal 2", fontsize=10)
-            ax.grid(True, linestyle="--", alpha=0.3)
-            ax.legend(bbox_to_anchor=(1.3, 1))
+            ax1.set_title("1. Seu Perfil Geral (Humanas vs Exatas)", fontsize=12)
+            ax1.legend()
+            ax1.grid(True, linestyle="--", alpha=0.3)
             
-            st.pyplot(fig)
+            # --- Gráfico 2: Cursos Específicos ---
+            fig2, ax2 = plt.subplots(figsize=(10, 6))
+            cores = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#9B59B6", "#2ECC71"]
+            
+            # Plot cada curso com múltiplos pontos
+            for i, curso in enumerate(cursos_map.keys()):
+                indices = [j for j, label in enumerate(labels) if label == curso]
+                ax2.scatter(
+                    X_2d[indices, 0], X_2d[indices, 1],
+                    color=cores[i],
+                    marker=["o", "s", "D", "^", "p"][i],
+                    alpha=0.7,
+                    s=100,
+                    label=curso,
+                    edgecolor='black',
+                    linewidth=0.5
+                )
+            
+            # Plot usuário
+            ax2.scatter(
+                X_2d[-1, 0], X_2d[-1, 1],
+                marker="*",
+                color="gold",
+                s=300,
+                edgecolor="black",
+                label="Você"
+            )
+            
+            ax2.set_title("2. Curso Ideal Baseado nas Características", fontsize=12)
+            ax2.legend(bbox_to_anchor=(1.05, 1))
+            ax2.grid(True, linestyle="--", alpha=0.3)
+            
+            # Mostrar ambos os gráficos
+            st.pyplot(fig1)
+            st.pyplot(fig2)
+            
             st.balloons()
             
-            # Resultado com emoji do curso
+            # Resultado com descrição
             emoji_curso = {
                 "Estatística": "📊",
                 "Engenharia Elétrica": "⚡",
                 "Engenharia Civil": "🏗️",
                 "Ciência da Computação": "💻",
-                "Matemática": "🧮",
+                "Engenharia Mecânica": "⚙️",
                 "Direito": "⚖️",
                 "História": "🏛️",
                 "Letras": "📖",
@@ -204,15 +261,15 @@ elif st.session_state.etapa == 2:
             
             st.success(f"{emoji_curso} **Curso ideal:** {curso_ideal}")
             
-            # Descrição especial para Engenharia Civil
-            if curso_ideal == "Engenharia Civil":
-                st.markdown("""
-                **🏗️ Características do Engenheiro Civil:**  
-                - Projetar e supervisionar construções  
-                - Calcular estruturas e materiais  
-                - Resolver problemas urbanos e ambientais  
-                - Trabalhar com infraestrutura e transporte  
-                """)
+            # Descrição detalhada
+            descricoes = {
+                "Estatística": "Análise de dados, probabilidade e modelagem matemática para tomada de decisões.",
+                "Engenharia Civil": "Projeto, construção e manutenção de infraestruturas e edificações.",
+                "Ciência da Computação": "Desenvolvimento de algoritmos, sistemas computacionais e inteligência artificial."
+            }
+            
+            if curso_ideal in descricoes:
+                st.info(f"**Sobre {curso_ideal}:** {descricoes[curso_ideal]}")
 
     if st.button("↩️ Voltar para a Parte 1"):
         st.session_state.etapa = 1
