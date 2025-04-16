@@ -227,8 +227,12 @@ elif st.session_state.etapa == 2:
                 else:
                     ax2.scatter(x, y, color=color, s=100, alpha=0.7)
             
-            # Plotar usuário
-            ax2.scatter(usuario_2d[0, 0], usuario_2d[0, 1], 
+            # Calcular a posição ideal da estrela (centro do cluster do curso ideal)
+            pontos_curso_ideal = dados_2d[[i for i, curso in enumerate(rotulos) if curso == curso_ideal]]
+            centroide_curso = np.mean(pontos_curso_ideal, axis=0)
+            
+            # Plotar usuário no centroide do curso ideal, com pequeno deslocamento para visualização
+            ax2.scatter(centroide_curso[0], centroide_curso[1] + 0.1, 
                       color=cores(curso_para_indice[curso_ideal]),
                       marker="*", s=300, edgecolor="black", label="Você")
             
@@ -280,4 +284,4 @@ elif st.session_state.etapa == 2:
 
     if st.button("↩️ Voltar para a Parte 1"):
         st.session_state.etapa = 1
-        st.rerun()        
+        st.rerun()    
