@@ -1,10 +1,3 @@
-os dados foram pegues do banco de dados da pnad pesquisa nacional por amostra de domicilios do ibge no site:
-
-https://console.cloud.google.com/bigquery?p=basedosdados&d=br_ibge_pnadc&t=rendimentos_outras_fontes&page=table&invt=Abt4-A&project=dados-pnade&supportedpurview=project&ws=!1m10!1m4!4m3!1sbasedosdados!2sbr_ibge_pnadc!3srendimentos_outras_fontes!1m4!1m3!1sdados-pnade!2sbquxjob_75c6cb4a_19602e84a58!3sUS
-
-os dados originais possuiam 1429834 de linhas, porém foram usados apenas dados referentes ao estado do ceará
-
-
 
 import streamlit as st
 import matplotlib.pyplot as plt
