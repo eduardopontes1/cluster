@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
-   
+
 # Configuração da página
 st.set_page_config(page_title="Perfil Acadêmico", layout="centered")
 st.title("🔍 Descubra seu perfil Acadêmico")
@@ -15,7 +15,7 @@ if 'etapa' not in st.session_state:
     st.session_state.respostas = None
     st.session_state.segunda_etapa_respostas = None
 
-# --- PRIMEIRA ETAPA (ORIGINAL FUNCIONANDO) ---
+# --- PRIMEIRA ETAPA ---
 if st.session_state.etapa == 1:
     st.write("**Parte 1/2:** Marque os conteúdos com que você mais se identifica:")
     
@@ -41,7 +41,7 @@ if st.session_state.etapa == 1:
         if sum(respostas) < 3:
             st.warning("Selecione pelo menos 3 conteúdos!")
         else:
-            # Classificação original usando K-means
+            # Classificação usando K-means
             X_novo = np.array(respostas).reshape(1, -1)
             grupo_humanas = np.array([
                 [1,0,1,0,1,0,1,0,1,0], [0,0,1,0,1,0,0,0,1,0],
@@ -57,44 +57,40 @@ if st.session_state.etapa == 1:
             st.session_state.perfil = "Humanas" if kmeans.predict(X_novo)[0] == 0 else "Exatas"
             st.session_state.respostas = respostas
             st.session_state.etapa = 2
-            st.session_state.segunda_etapa_respostas = [False] * 12  # 12 características
+            st.session_state.segunda_etapa_respostas = [False] * 10  # 10 características
             st.rerun()
 
-# --- SEGUNDA ETAPA (CORRIGIDA) ---
+# --- SEGUNDA ETAPA (SIMPLIFICADA) ---
 elif st.session_state.etapa == 2:
     st.success(f"Perfil principal: **{st.session_state.perfil}**")
     st.divider()
-    st.subheader("📌 **Parte 2/2:** Selecione as características que mais combinam com você")
+    st.subheader("📌 **Parte 2/2:** Selecione as 5 características que mais combinam com você")
     
-    # Características por área - Definições mais específicas e exclusivas
+    # Características simplificadas para ensino médio
     caracteristicas = {
         "Exatas": [
-            "📊 Modelagem estatística avançada",  # Estatística
-            "🧮 Teoria matemática abstrata",      # Matemática
-            "⚡ Projeto de circuitos integrados",  # Eng. Elétrica
-            "🏗️ Cálculo estrutural de pontes",    # Eng. Civil
-            "💻 Desenvolvimento de algoritmos",   # Ciência da Computação
-            "📈 Análise preditiva de dados",      # Estatística
-            "🔢 Equações diferenciais parciais",  # Matemática
-            "📐 Dinâmica de fluidos computacional", # Eng. Mecânica
-            "🌐 Arquitetura de redes complexas",   # Ciência da Computação
-            "🧪 Física quântica aplicada",        # Engenharias/Física
-            "🤖 Controle de sistemas autônomos",  # Eng. Controle
-            "📉 Visualização científica de dados"  # Estatística
+            "Gosto de trabalhar com números e estatísticas",
+            "Tenho facilidade com matemática",
+            "Curto tecnologia e computadores",
+            "Gosto de resolver problemas lógicos",
+            "Me interesso por como as coisas funcionam",
+            "Prefiro coisas concretas e objetivas",
+            "Gosto de construir e criar coisas",
+            "Tenho curiosidade sobre ciências",
+            "Gosto de jogos de estratégia",
+            "Prefiro exatidão a interpretações"
         ],
         "Humanas": [
-            "⚖️ Direito constitucional",         # Direito
-            "📜 Paleografia e documentos antigos", # História
-            "📖 Teoria literária crítica",        # Letras
-            "🧠 Neuropsicologia cognitiva",       # Psicologia
-            "🗣️ Mediação de conflitos",          # Psicologia/Direito
-            "🎨 Curadoria de exposições",         # Artes
-            "🌍 Etnografia cultural",             # Antropologia
-            "✍️ Redação acadêmica",               # Vários
-            "🏛️ Arqueologia clássica",           # História
-            "👥 Psicologia social",               # Psicologia
-            "💬 Oratória persuasiva",             # Comunicação
-            "📝 Elaboração de contratos"          # Direito
+            "Gosto de ler e escrever",
+            "Tenho facilidade em me expressar",
+            "Me interesso por comportamento humano",
+            "Gosto de debater ideias",
+            "Tenho sensibilidade artística",
+            "Me interesso por questões sociais",
+            "Gosto de história e cultura",
+            "Tenho facilidade com idiomas",
+            "Prefiro trabalhar com pessoas",
+            "Gosto de interpretar textos"
         ]
     }[st.session_state.perfil]
 
@@ -113,85 +109,84 @@ elif st.session_state.etapa == 2:
         if len(selecoes) != 5:
             st.warning("Selecione exatamente 5 características!")
         else:
-            # Mapeamento curso-características (mais específico)
+            # Mapeamento curso-características simplificado
             cursos_map = {
                 "Exatas": {
-                    "Estatística": [0, 5, 11],  # Características exclusivas
-                    "Matemática": [1, 6],
-                    "Engenharia Elétrica": [2],
-                    "Engenharia Civil": [3],
-                    "Ciência da Computação": [4, 8],
-                    "Engenharia Mecânica": [7],
-                    "Física": [9],
-                    "Engenharia de Controle": [10]
+                    "Estatística": [0, 1, 5, 9],
+                    "Matemática": [1, 3, 6, 9],
+                    "Engenharias": [2, 4, 6, 7],
+                    "Ciência da Computação": [2, 3, 8, 9],
+                    "Física": [1, 4, 7, 9]
                 },
                 "Humanas": {
-                    "Direito": [0, 11],
-                    "História": [1, 8],
-                    "Letras": [2],
-                    "Psicologia": [3, 4, 9],
-                    "Artes": [5],
-                    "Antropologia": [6],
-                    "Comunicação": [10],
-                    "Ciências Sociais": [7]
+                    "Direito": [1, 3, 5, 9],
+                    "História": [0, 6, 7, 9],
+                    "Letras": [0, 1, 7, 9],
+                    "Psicologia": [2, 3, 5, 8],
+                    "Artes": [0, 4, 6, 8],
+                    "Ciências Sociais": [3, 5, 6, 8]
                 }
             }[st.session_state.perfil]
             
-            # Calcular pontuação para cada curso
-            scores = {}
-            for curso, idx_caracs in cursos_map.items():
-                score = sum(1 for idx in idx_caracs 
-                           if caracteristicas[idx] in selecoes)
-                scores[curso] = score
+            # Calcular similaridade usando clustering
+            # Criar vetor de características selecionadas (1=selecionado, 0=não selecionado)
+            vetor_usuario = np.array([1 if carac in selecoes else 0 for carac in caracteristicas])
             
-            # Curso ideal é o com maior pontuação (desempate por ordem de preferência)
-            curso_ideal = max(scores.items(), key=lambda x: (x[1], -list(scores.keys()).index(x[0])))[0]
+            # Criar dados de treino baseados nos cursos
+            dados_treino = []
+            cursos_lista = []
+            for curso, caracs in cursos_map.items():
+                # Criar 3 exemplos por curso (com pequenas variações)
+                for _ in range(3):
+                    vetor = np.zeros(len(caracteristicas))
+                    # Ativar características principais do curso
+                    for idx in caracs:
+                        vetor[idx] = 1
+                    # Adicionar pequeno ruído
+                    vetor += np.random.normal(0, 0.1, len(vetor))
+                    dados_treino.append(vetor)
+                    cursos_lista.append(curso)
             
-            # --- VISUALIZAÇÃO MELHORADA ---
-            # Gerar pontos para os cursos (3 por curso)
-            num_cursos = len(cursos_map)
-            pontos_curso = {}
-            for i, curso in enumerate(cursos_map.keys()):
-                # Posição base no eixo X + pequena variação
-                x_base = i
-                pontos_curso[curso] = np.column_stack([
-                    np.random.normal(x_base, 0.1, size=3),  # Posição X
-                    np.random.normal(0, 0.1, size=3)        # Posição Y
-                ])
+            dados_treino = np.array(dados_treino)
             
-            # Posição do usuário (próxima ao centroide do curso ideal)
-            centroide = np.mean(pontos_curso[curso_ideal], axis=0)
-            user_pos = centroide + np.array([0, 0.2])  # Posiciona acima do cluster
+            # Aplicar PCA para visualização 2D
+            pca = PCA(n_components=2)
+            dados_2d = pca.fit_transform(dados_treino)
+            usuario_2d = pca.transform(vetor_usuario.reshape(1, -1))
             
-            # Gráfico
+            # Clusterizar os cursos
+            kmeans = KMeans(n_clusters=len(cursos_map), random_state=42, n_init=10)
+            clusters = kmeans.fit_predict(dados_2d)
+            
+            # Determinar qual cluster o usuário pertence
+            cluster_usuario = kmeans.predict(usuario_2d)[0]
+            
+            # Encontrar o curso mais comum no cluster do usuário
+            cursos_no_cluster = [cursos_lista[i] for i, c in enumerate(clusters) if c == cluster_usuario]
+            from collections import Counter
+            curso_ideal = Counter(cursos_no_cluster).most_common(1)[0][0]
+            
+            # --- VISUALIZAÇÃO ---
             fig, ax = plt.subplots(figsize=(10, 6))
-            cores = plt.cm.get_cmap('tab10', num_cursos)
             
-            for i, (curso, pontos) in enumerate(pontos_curso.items()):
-                ax.scatter(
-                    pontos[:, 0], pontos[:, 1],
-                    color=cores(i),
-                    s=100,
-                    label=f"{curso} ({scores[curso]})",
-                    alpha=0.8,
-                    edgecolor='black'
-                )
+            # Cores para os cursos
+            cores = plt.cm.get_cmap('tab10', len(cursos_map))
+            curso_para_cor = {curso: i for i, curso in enumerate(cursos_map.keys())}
+            
+            # Plotar pontos dos cursos
+            for i, (x, y) in enumerate(dados_2d):
+                curso = cursos_lista[i]
+                ax.scatter(x, y, color=cores(curso_para_cor[curso]), 
+                          label=curso if i < len(cursos_map) else "", s=100, alpha=0.7)
             
             # Plotar usuário
-            ax.scatter(
-                user_pos[0], user_pos[1],
-                color=cores(list(cursos_map.keys()).index(curso_ideal)),
-                marker="*",
-                s=300,
-                edgecolor="black",
-                label=f"Você → {curso_ideal}"
-            )
+            ax.scatter(usuario_2d[0, 0], usuario_2d[0, 1], color=cores(curso_para_cor[curso_ideal]), 
+                      marker="*", s=300, edgecolor="black", label="Você")
             
             # Configurações do gráfico
             ax.set_title("Sua Proximidade com os Cursos", pad=20)
-            ax.set_xticks(range(num_cursos))
-            ax.set_xticklabels(cursos_map.keys(), rotation=45, ha='right')
-            ax.set_yticks([])
+            ax.set_xlabel("Componente Principal 1")
+            ax.set_ylabel("Componente Principal 2")
             ax.legend(bbox_to_anchor=(1.05, 1))
             ax.grid(True, linestyle="--", alpha=0.3)
             
@@ -202,12 +197,10 @@ elif st.session_state.etapa == 2:
             
             emoji_curso = {
                 "Estatística": "📊", "Matemática": "🧮", 
-                "Engenharia Elétrica": "⚡", "Engenharia Civil": "🏗️",
-                "Ciência da Computação": "💻", "Engenharia Mecânica": "⚙️",
-                "Física": "🔭", "Engenharia de Controle": "🤖",
-                "Direito": "⚖️", "História": "🏛️", "Letras": "📖",
-                "Psicologia": "🧠", "Artes": "🎨", "Antropologia": "🌍",
-                "Comunicação": "💬", "Ciências Sociais": "👥"
+                "Engenharias": "⚙️", "Ciência da Computação": "💻",
+                "Física": "🔭", "Direito": "⚖️", "História": "🏛️", 
+                "Letras": "📖", "Psicologia": "🧠", "Artes": "🎨",
+                "Ciências Sociais": "👥"
             }.get(curso_ideal, "🎓")
             
             st.success(f"""
@@ -219,13 +212,13 @@ elif st.session_state.etapa == 2:
             **Características que mais combinam:**
             """)
             
-            # Listar apenas características que contribuíram para o curso
-            caracs_correspondentes = [
-                carac for carac in selecoes 
-                if any(carac == caracteristicas[idx] for idx in cursos_map[curso_ideal])
+            # Listar características selecionadas que são relevantes para o curso
+            caracs_relevantes = [
+                carac for i, carac in enumerate(caracteristicas) 
+                if (i in cursos_map[curso_ideal] and st.session_state.segunda_etapa_respostas[i])
             ]
             
-            for carac in caracs_correspondentes:
+            for carac in caracs_relevantes[:5]:  # Mostrar no máximo 5
                 st.write(f"- {carac}")
 
     if st.button("↩️ Voltar para a Parte 1"):
