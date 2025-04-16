@@ -26,8 +26,8 @@ for i in range(len(perguntas)):
     respostas.append(resposta)
 if st.button("Ver resultado"):
     X_novo = np.array(respostas).reshape(1, -1)
-    grupo_humanas = np.array([[0,0,0,0,0], [0,0,1,0,0], [0,1,0,0,0],[1,0,0,0,0],[0,0,0,0,1],[0,0,0,1,0],[1,1,0,0,0]])
-    grupo_exatas  = np.array([[1,1,1,1,1], [0,1,1,1,1], [1,0,1,1,1],[1,1,0,1,1],[1,1,1,0,1],[1,1,1,1,0],[0,0,1,1,1]])
+    grupo_humanas = np.array([[0,0,0,0,0], [0,0,1,0,0], [0,1,0,0,0],[1,0,0,0,0],[0,0,0,0,1],[0,0,0,1,0],[1,1,0,0,0],[1,0,1,0,0],[1,0,0,1,0],[1,0,0,0,1],[0,1,1,0,0],[0,1,0,1,0],[0,1,0,0,1],[0,0,1,0,1],[0,0,0,1,1]])
+    grupo_exatas  = np.array([[1,1,1,1,1], [0,1,1,1,1], [1,0,1,1,1],[1,1,0,1,1],[1,1,1,0,1],[1,1,1,1,0],[0,0,1,1,1],[0,1,0,1,1],[0,1,1,0,1],[0,1,1,1,0],[1,0,0,1,1],[1,0,1,0,1],[1,0,1,1,0],[1,1,0,1,0],[1,1,1,0,0]])
     X_treino = np.vstack((grupo_humanas, grupo_exatas))
     kmeans = KMeans(n_clusters=2, random_state=42, n_init=10)
     kmeans.fit(X_treino)
@@ -44,8 +44,12 @@ if st.button("Ver resultado"):
     fig, ax = plt.subplots()
     cores = ["blue", "red"]
     formas = ["o", "s"]
-    labels_pred = kmeans.predict(X_treino)
-    for i in range(len(X_treino)):
+    pontos_humanas = np.array([[0,0,0,0,0], [0,0,1,0,0], [0,1,0,0,0],[1,0,0,0,0],[0,0,0,0,1],[0,0,0,1,0]])
+    pontos_exatas =
+    X_visual = np.vstack((pontos_humanas, pontos_exatas))
+        
+    labels_pred = kmeans.predict(X_visual)
+    for i in range(len(X_visual)):
         cluster_id = labels_pred[i]
         ax.scatter(X_2d[i, 0], X_2d[i, 1], marker=formas[cluster_id], color=cores[cluster_id], s=100, alpha=0.6)
     #ponto daresposta
