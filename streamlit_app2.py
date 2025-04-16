@@ -44,8 +44,8 @@ if st.button("Ver resultado"):
     fig, ax = plt.subplots()
     cores = ["blue", "red"]
     formas = ["o", "s"]
-    pontos_humanas = np.array([[0,0,0,0,0], [0,0,1,0,0], [0,1,0,0,0],[1,0,0,0,0],[0,0,0,0,1],[0,0,0,1,0]])
-    pontos_exatas = np.array([[1,1,1,1,1], [0,1,1,1,1], [1,0,1,1,1],[1,1,0,1,1],[1,1,1,0,1],[1,1,1,1,0]])
+    pontos_humanas = np.array([[0,0,0,0,0], [0,0,1,0,0], [0,1,0,0,0],[1,0,0,0,0]])
+    pontos_exatas = np.array([[1,1,1,1,1], [0,1,1,1,1], [1,0,1,1,1],[1,1,0,1,1]])
     X_visual = np.vstack((pontos_humanas, pontos_exatas))
         
     labels_pred = kmeans.predict(X_visual)
