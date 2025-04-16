@@ -49,7 +49,7 @@ if st.button("Ver resultado"):
     pontos_exatas = np.array([[1,1,1,1,1], [0,1,1,1,1], [1,0,1,1,1],[1,1,0,1,1]])
     X_visual = np.vstack((pontos_humanas, pontos_exatas))
         
-    labels_pred = kmeans.predict(X_visual)
+    labels_pred = kmeans.predict(X_treino)
     for i in range(len(X_visual)):
         cluster_id = labels_pred[i]
         ax.scatter(X_2d[i, 0], X_2d[i, 1], marker=formas[cluster_id], color=cores[cluster_id], s=100, alpha=0.6)
