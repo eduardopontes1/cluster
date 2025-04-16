@@ -46,7 +46,7 @@ if st.button("🔎 Descobrir meu perfil"):
             [0, 0, 0, 1, 0, 1, 0, 1]   # Foco em ciências/tecnologia
         ])
         X_treino = np.vstack((grupo_humanas, grupo_exatas))
-        y_treino = np.array([0] * len(grupo_humanas) + [1] * len(grupo_exatas)
+        y_treino = np.array([0] * len(grupo_humanas) + [1] * len(grupo_exatas))  # Parêntese fechado aqui
 
         # K-means
         kmeans = KMeans(n_clusters=2, random_state=42, n_init=10)
