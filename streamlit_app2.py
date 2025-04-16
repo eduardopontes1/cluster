@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 import numpy as np
 
-st.title("Descubra seu perfil com Machine Learning")
-st.write("Responda às perguntas abaixo e veja em qual grupo você se encaixa com base em agrupamento automático!")
+st.title("Descubra seu perfil Acadêmico")
+st.write("Responda às perguntas abaixo e veja em qual grupo você se encaixa com base em agrupmento!")
 
 # Perguntas e alternativas
 perguntas = [
@@ -20,7 +20,7 @@ alternativas = [
     ("História", "Física"),
     ("Pessoas", "Tecnologia"),
     ("Interpretar textos", "Cálculos"),
-    ("Política", "Engenharia")
+    ("POlítica", "Engenharia")
 ]
 
 respostas = []
@@ -30,12 +30,12 @@ for i in range(len(perguntas)):
     resposta = 0 if escolha == alternativas[i][0] else 1
     respostas.append(resposta)
 
-if st.button("Ver resultado com KMeans"):
+if st.button("Ver resultado"):
     X_novo = np.array(respostas).reshape(1, -1)
 
     # Criando dados de referência simulados
-    grupo_humanas = np.array([[0,0,0,0,0], [0,0,1,0,0], [0,1,0,0,0]])
-    grupo_exatas  = np.array([[1,1,1,1,1], [1,1,1,1,0], [1,0,1,1,1]])
+    grupo_humanas = np.array([[0,0,0,0,0], [0,0,1,0,0], [0,1,0,0,0],[1,0,0,0,0],[0,0,0,0,1]])
+    grupo_exatas  = np.array([[1,1,1,1,1], [1,1,1,1,0], [1,0,1,1,1],[0,1,1,1,1],[1,1,0,1,1]])
     X_treino = np.vstack((grupo_humanas, grupo_exatas))
 
     # Aplicando o KMeans
