@@ -6,7 +6,7 @@ import numpy as np
 
 # Configuração da página
 st.set_page_config(page_title="Perfil Acadêmico", layout="centered")
-st.title("🔍 Descubra seu perfil Acadêmico")
+st.title("🔍 Descubra seu perfil Acadêmico.")
 st.write("Marque os conteúdos com que você mais se identifica:")
 
 # --- PRIMEIRA ETAPA: CLASSIFICAÇÃO INICIAL ---
@@ -184,4 +184,4 @@ if st.button("🔎 Descobrir meu perfil"):
                     - **🧮 Matemática**: Fundamentos teóricos e abstração.  
                     - **🔭 Física**: Leis fundamentais do universo.  
                     - **⚡ Eng. Elétrica**: Sistemas de energia e eletrônicos.  
-                    """)
+                    """) 
