@@ -1,51 +1,48 @@
+# Após suas importações
 import streamlit as st
+import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
-import numpy as np
+from sklearn.decomposition import PCA
 
-st.title("Descubra seu perfil Acadêmico")
-st.write("Responda às perguntas abaixo e veja em qual grupo você se encaixa com base em agrupmento!")
+# Inicializar fila de usuários se ainda não existir
+if "fila_usuarios" not in st.session_state:
+    st.session_state.fila_usuarios = []
 
-# Perguntas e alternativas
-perguntas = [
-    "Você prefere escrever uma redação ou resolver um problema de matemática?",
-    "Você se interessa mais por história ou física?",
-    "Você gostaria de trabalhar com pessoas ou com tecnologia?",
-    "Você se sai melhor em interpretar textos ou em cálculos?",
-    "Você prefere assistir a um documentário sobre política ou sobre engenharia?"
-]
-
-alternativas = [
-    ("Redação", "Problema de matemática"),
-    ("História", "Física"),
-    ("Pessoas", "Tecnologia"),
-    ("Interpretar textos", "Cálculos"),
-    ("POlítica", "Engenharia")
-]
-
-respostas = []
-for i in range(len(perguntas)):
-    st.write(f"**{perguntas[i]}**")
-    escolha = st.radio("", alternativas[i], key=f"q{i}")
-    resposta = 0 if escolha == alternativas[i][0] else 1
-    respostas.append(resposta)
-
+# Após o botão "Ver resultado":
 if st.button("Ver resultado"):
     X_novo = np.array(respostas).reshape(1, -1)
 
-    # Criando dados de referência simulados
-    grupo_humanas = np.array([[0,0,0,0,0], [0,0,1,0,0], [0,1,0,0,0],[1,0,0,0,0],[0,0,0,0,1]])
-    grupo_exatas  = np.array([[1,1,1,1,1], [1,1,1,1,0], [1,0,1,1,1],[0,1,1,1,1],[1,1,0,1,1]])
+    # Dados de treino
+    grupo_humanas = np.array([
+        [0,0,0,0,0], [0,0,1,0,0], [0,1,0,0,0], [1,0,0,0,0], [0,0,0,0,1],
+        [0,0,0,1,0], [1,1,0,0,0], [1,0,1,0,0], [1,0,0,1,0], [1,0,0,0,1],
+        [0,1,1,0,0], [0,1,0,1,0], [0,1,0,0,1], [0,0,1,0,1], [0,0,0,1,1]
+    ])
+    grupo_exatas = np.array([
+        [1,1,1,1,1], [0,1,1,1,1], [1,0,1,1,1], [1,1,0,1,1], [1,1,1,0,1],
+        [1,1,1,1,0], [0,0,1,1,1], [0,1,0,1,1], [0,1,1,0,1], [0,1,1,1,0],
+        [1,0,0,1,1], [1,0,1,0,1], [1,0,1,1,0], [1,1,0,1,0], [1,1,1,0,0]
+    ])
+
     X_treino = np.vstack((grupo_humanas, grupo_exatas))
 
-    # Aplicando o KMeans
+    # Atualiza a fila de usuários
+    st.session_state.fila_usuarios.append(X_novo[0])
+    if len(st.session_state.fila_usuarios) > 5:
+        st.session_state.fila_usuarios.pop(0)
+
+    # Adiciona os pontos anteriores dos usuários à visualização, mas não ao treino
+    X_plot = np.vstack((X_treino, np.array(st.session_state.fila_usuarios), X_novo))
+
+    # Treinamento com dados originais (sem incluir usuários anteriores)
     kmeans = KMeans(n_clusters=2, random_state=42, n_init=10)
     kmeans.fit(X_treino)
 
-    # Prevendo o grupo do novo aluno
+    # Previsão do novo usuário
     grupo = kmeans.predict(X_novo)[0]
 
-    # Descobrindo qual cluster é humanas/exatas com base na média
+    # Definindo o rótulo
     medias = kmeans.cluster_centers_
     rotulos = ["Humanas" if np.mean(c) < 0.5 else "Exatas" for c in medias]
     perfil = rotulos[grupo]
@@ -53,36 +50,34 @@ if st.button("Ver resultado"):
     cor = "blue" if perfil == "Humanas" else "red"
     simbolo = "o" if perfil == "Humanas" else "s"
 
-    # Gráfico de visualização (apenas 2D usando PCA simplificado)
-    from sklearn.decomposition import PCA
-    X_vis = np.vstack((X_treino, X_novo))
+    # Redução de dimensionalidade
     pca = PCA(n_components=2)
-    X_2d = pca.fit_transform(X_vis)
+    X_2d = pca.fit_transform(X_plot)
 
     fig, ax = plt.subplots()
     cores = ["blue", "red"]
     formas = ["o", "s"]
 
-    labels_pred = kmeans.predict(X_treino)
-    for i in range(len(X_treino)):
+    # Labels para dados do plot (treino + usuários anteriores)
+    labels_pred = kmeans.predict(X_plot[:-1])  # exclui o novo
+
+    for i in range(len(X_plot)-1):  # Exclui o último que é o novo usuário
         cluster_id = labels_pred[i]
         ax.scatter(X_2d[i, 0], X_2d[i, 1], marker=formas[cluster_id], color=cores[cluster_id], s=100, alpha=0.6)
 
-    # Novo aluno (último ponto)
-    ax.scatter(X_2d[-1, 0], X_2d[-1, 1], marker=simbolo, color=cor, s=300, edgecolor='black', label="Você")
+    # Ponto do novo usuário
+    ax.scatter(X_2d[-1, 0], X_2d[-1, 1], marker=simbolo, color=cor, s=300, edgecolor='black', label=\"Você\")
 
-    ax.set_title("Agrupamento dos perfis (Humanas x Exatas)")
-    ax.axis("on")
+    # Centros dos clusters
+    centros_2d = pca.transform(kmeans.cluster_centers_)
+    ax.scatter(centros_2d[:, 0], centros_2d[:, 1], c='black', marker='X', s=200, label='Centro')
+
+    ax.set_title(\"Agrupamento dos perfis (Humanas x Exatas)\")
+    ax.axis(\"on\")
     st.pyplot(fig)
 
-    # Comentário final
-    if perfil == "Humanas":
-        texto = "Você foi agrupado com outros alunos com perfil mais voltado para comunicação, interpretação e temas sociais."
+    st.subheader(f\"Seu perfil é: {perfil} 🎯\")
+    if perfil == \"Humanas\":
+        st.info(\"Você foi agrupado com outros alunos com perfil mais voltado para comunicação, interpretação e temas sociais.\")
     else:
-        texto = "Você foi agrupado com outros alunos com perfil mais voltado para lógica, cálculo e pensamento analítico."
-
-    st.subheader(f"Seu perfil é: {perfil} 🎯")
-    st.info(texto)
-
-
-
+        st.info(\"Você foi agrupado com outros alunos com perfil mais voltado para lógica, cálculo e pensamento analítico.\")
