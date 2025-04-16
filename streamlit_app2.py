@@ -2,6 +2,7 @@ import streamlit as st
 import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 import numpy as np
+from sklearn.decomposition import PCA
 
 st.title("Descubra seu perfil Acadêmico")
 st.write("Responda às perguntas abaixo e veja em qual grupo você se encaixa com base em agrupamento!")
@@ -23,6 +24,7 @@ alternativas = [
     ("POlítica", "Engenharia")
 ]
 
+# Coletando as respostas
 respostas = []
 for i in range(len(perguntas)):
     st.write(f"**{perguntas[i]}**")
@@ -30,90 +32,74 @@ for i in range(len(perguntas)):
     resposta = 0 if escolha == alternativas[i][0] else 1
     respostas.append(resposta)
 
+# Quando clica no botão
 if st.button("Ver resultado"):
     X_novo = np.array(respostas).reshape(1, -1)
 
-    # Dados de referência
+    # Dados de treino representativos
     grupo_humanas = np.array([
-        [0,0,0,0,0], [0,0,1,0,0], [0,1,0,0,0],[1,0,0,0,0],[0,0,0,0,1],
-        [0,0,0,1,0],[1,1,0,0,0],[1,0,1,0,0],[1,0,0,1,0],[1,0,0,0,1],
-        [0,1,1,0,0],[0,1,0,1,0],[0,1,0,0,1],[0,0,1,0,1],[0,0,0,1,1]
+        [0,0,0,0,0], [0,1,0,0,1], [1,0,0,1,0]
     ])
-    grupo_exatas  = np.array([
-        [1,1,1,1,1], [0,1,1,1,1], [1,0,1,1,1],[1,1,0,1,1],[1,1,1,0,1],
-        [1,1,1,1,0],[0,0,1,1,1],[0,1,0,1,1],[0,1,1,0,1],[0,1,1,1,0],
-        [1,0,0,1,1],[1,0,1,0,1],[1,0,1,1,0],[1,1,0,1,0],[1,1,1,0,0]
+    grupo_exatas = np.array([
+        [1,1,1,1,1], [1,1,0,1,1], [0,1,1,1,0]
     ])
+
     X_treino = np.vstack((grupo_humanas, grupo_exatas))
 
-    # KMeans
+    # Treinamento do modelo
     kmeans = KMeans(n_clusters=2, random_state=42, n_init=10)
     kmeans.fit(X_treino)
 
+    # Prevendo o grupo da nova amostra
     grupo = kmeans.predict(X_novo)[0]
+
+    # Determinando rótulos com base na média
     medias = kmeans.cluster_centers_
     rotulos = ["Humanas" if np.mean(c) < 0.5 else "Exatas" for c in medias]
     perfil = rotulos[grupo]
 
-    cor = "blue" if perfil == "Humanas" else "red"
-    simbolo = "o" if perfil == "Humanas" else "s"
+    # Cores e símbolos
+    cores = ["blue", "red"]
+    formas = ["o", "s"]
+    cor_usuario = cores[grupo]
+    simbolo_usuario = formas[grupo]
 
-    # VISUALIZAÇÃO MELHORADA
-    from sklearn.decomposition import PCA
-
+    # Visualização com PCA
     X_vis = np.vstack((X_treino, X_novo))
     pca = PCA(n_components=2)
     X_2d = pca.fit_transform(X_vis)
-
-    # Centros dos clusters no espaço 2D
-    centros_2d = pca.transform(kmeans.cluster_centers_)
+    centroide_2d = pca.transform(kmeans.cluster_centers_)
 
     fig, ax = plt.subplots()
-    cores = ["blue", "red"]
-    formas = ["o", "s"]
 
-    # Previsões dos dados de treino
-    labels_pred = kmeans.predict(X_treino)
+    # Plotando os pontos do grupo 0 e 1
+    for i in range(len(X_treino)):
+        label = kmeans.predict([X_treino[i]])[0]
+        ax.scatter(X_2d[i, 0], X_2d[i, 1],
+                   c=cores[label],
+                   marker=formas[label],
+                   s=150,
+                   alpha=0.6)
 
-    # Plotando os pontos dos grupos
-    for cluster_id in range(2):
-        indices = np.where(labels_pred == cluster_id)
-        ax.scatter(
-            X_2d[indices, 0], X_2d[indices, 1],
-            c=cores[cluster_id],
-            marker=formas[cluster_id],
-            label=f"Grupo {rotulos[cluster_id]}",
-            s=120,
-            alpha=0.6,
-            edgecolor='gray'
-        )
+    # Ponto do usuário
+    ax.scatter(X_2d[-1, 0], X_2d[-1, 1],
+               color=cor_usuario,
+               marker=simbolo_usuario,
+               s=300,
+               edgecolor='black',
+               label='Você')
 
-    # Plotando os centros dos clusters
-    ax.scatter(
-        centros_2d[:, 0], centros_2d[:, 1],
-        c=cores,
-        marker='X',
-        s=300,
-        label='Centro do grupo',
-        edgecolor='black'
-    )
-
-    # Plotando o ponto do usuário
-    ax.scatter(
-        X_2d[-1, 0], X_2d[-1, 1],
-        marker=simbolo,
-        color=cor,
-        s=300,
-        edgecolor='black',
-        label="Você"
-    )
+    # Centro dos grupos
+    ax.scatter(centroide_2d[:, 0], centroide_2d[:, 1],
+               marker='X', color=cores, s=300,
+               edgecolor='black', label='Centro do grupo')
 
     ax.set_title("Agrupamento dos perfis (Humanas x Exatas)")
     ax.axis("off")
     ax.legend()
     st.pyplot(fig)
 
-    # Texto final
+    # Mensagem final
     if perfil == "Humanas":
         texto = "Você foi agrupado com outros alunos com perfil mais voltado para comunicação, interpretação e temas sociais."
     else:
@@ -122,4 +108,4 @@ if st.button("Ver resultado"):
     st.subheader(f"Seu perfil é: {perfil} 🎯")
     st.info(texto)
 
-    st.write("A técnica estatística conhecida como K-Means é amplamente utilizada em aplicativos de redes sociais como Instagram e TikTok. Já reparou que, ao criar uma conta no TikTok, ele pergunta que tipo de vídeos você gosta? Isso é parte de um processo de agrupamento, no qual o algoritmo tenta te colocar em um grupo com pessoas que têm preferências parecidas com as suas. Assim, ele identifica os estilos de vídeos que mais combinam com o seu perfil, com o objetivo de te manter engajado no aplicativo pelo maior tempo possível. Essa técnica também é usada para exibir anúncios que têm mais chance de agradar você. Entendeu agora por que às vezes aparece aquele anúncio exatamente sobre o que você estava pensando? Pois é... a estatística estava agindo o tempo todo — e você nem percebeu!")
+    st.write("A técnica estatística conhecida como K-Means é amplamente utilizada em aplicativos de redes sociais como Instagram e TikTok...")
