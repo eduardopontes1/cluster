@@ -57,41 +57,63 @@ if st.session_state.etapa == 1:
             st.session_state.perfil = "Humanas" if kmeans.predict(X_novo)[0] == 0 else "Exatas"
             st.session_state.respostas = respostas
             st.session_state.etapa = 2
-            st.session_state.segunda_etapa_respostas = [False] * 10  # 10 características
+            st.session_state.segunda_etapa_respostas = [False] * 12  # 12 características
             st.rerun()
 
-# --- SEGUNDA ETAPA (SIMPLIFICADA) ---
+# --- SEGUNDA ETAPA (ATUALIZADA) ---
 elif st.session_state.etapa == 2:
     st.success(f"Perfil principal: **{st.session_state.perfil}**")
     st.divider()
     st.subheader("📌 **Parte 2/2:** Selecione as 5 características que mais combinam com você")
     
-    # Características simplificadas para ensino médio
+    # Características atualizadas para cursos mais populares
     caracteristicas = {
         "Exatas": [
-            "Gosto de trabalhar com números e estatísticas",
-            "Tenho facilidade com matemática",
-            "Curto tecnologia e computadores",
-            "Gosto de resolver problemas lógicos",
-            "Me interesso por como as coisas funcionam",
-            "Prefiro coisas concretas e objetivas",
-            "Gosto de construir e criar coisas",
-            "Tenho curiosidade sobre ciências",
-            "Gosto de jogos de estratégia",
-            "Prefiro exatidão a interpretações"
+            "Gosto de analisar dados e estatísticas",
+            "Tenho facilidade com cálculos matemáticos",
+            "Me interesso por programação e tecnologia",
+            "Gosto de resolver problemas práticos",
+            "Tenho curiosidade sobre como as coisas funcionam",
+            "Prefiro lógica e objetividade",
+            "Gosto de construir e projetar coisas",
+            "Me interesso por ciências e experimentos",
+            "Tenho habilidade com números",
+            "Gosto de jogos de raciocínio",
+            "Me interesso por inteligência artificial",
+            "Tenho facilidade com gráficos e visualizações"
         ],
         "Humanas": [
-            "Gosto de ler e escrever",
+            "Gosto de ler e escrever textos",
             "Tenho facilidade em me expressar",
             "Me interesso por comportamento humano",
-            "Gosto de debater ideias",
+            "Gosto de debater ideias e opiniões",
             "Tenho sensibilidade artística",
-            "Me interesso por questões sociais",
-            "Gosto de história e cultura",
+            "Me preocupo com questões sociais",
+            "Gosto de estudar história e cultura",
             "Tenho facilidade com idiomas",
-            "Prefiro trabalhar com pessoas",
-            "Gosto de interpretar textos"
+            "Prefiro trabalhar em grupo",
+            "Gosto de interpretar textos e obras",
+            "Me interesso por política e sociedade",
+            "Tenho habilidade para mediar conflitos"
         ]
+    }[st.session_state.perfil]
+
+    # Mapeamento curso-características (5 cursos mais populares por área)
+    cursos_map = {
+        "Exatas": {
+            "Estatística": [0, 1, 5, 9, 11],  # Características principais
+            "Ciência da Computação": [2, 3, 5, 10, 11],
+            "Engenharia Civil": [3, 6, 1, 4, 7],
+            "Engenharia Elétrica": [3, 4, 7, 5, 10],
+            "Matemática": [1, 5, 9, 3, 8]
+        },
+        "Humanas": {
+            "Direito": [1, 3, 11, 4, 10],
+            "Psicologia": [2, 3, 8, 11, 5],
+            "Administração": [1, 3, 8, 5, 10],
+            "Comunicação Social": [0, 1, 4, 8, 10],
+            "Pedagogia": [0, 2, 8, 5, 9]
+        }
     }[st.session_state.perfil]
 
     # Atualizar seleções mantendo estado
@@ -109,98 +131,109 @@ elif st.session_state.etapa == 2:
         if len(selecoes) != 5:
             st.warning("Selecione exatamente 5 características!")
         else:
-            # Mapeamento curso-características simplificado
-            cursos_map = {
-                "Exatas": {
-                    "Estatística": [0, 1, 5, 9],
-                    "Matemática": [1, 3, 6, 9],
-                    "Engenharias": [2, 4, 6, 7],
-                    "Ciência da Computação": [2, 3, 8, 9],
-                    "Física": [1, 4, 7, 9]
-                },
-                "Humanas": {
-                    "Direito": [1, 3, 5, 9],
-                    "História": [0, 6, 7, 9],
-                    "Letras": [0, 1, 7, 9],
-                    "Psicologia": [2, 3, 5, 8],
-                    "Artes": [0, 4, 6, 8],
-                    "Ciências Sociais": [3, 5, 6, 8]
-                }
-            }[st.session_state.perfil]
-            
-            # Calcular similaridade usando clustering
-            # Criar vetor de características selecionadas (1=selecionado, 0=não selecionado)
+            # --- CÁLCULO DO CURSO IDEAL COM K-MEANS ---
+            # Criar vetor do usuário (1 para características selecionadas)
             vetor_usuario = np.array([1 if carac in selecoes else 0 for carac in caracteristicas])
             
             # Criar dados de treino baseados nos cursos
             dados_treino = []
-            cursos_lista = []
-            for curso, caracs in cursos_map.items():
-                # Criar 3 exemplos por curso (com pequenas variações)
-                for _ in range(3):
+            rotulos = []
+            
+            for curso, indices in cursos_map.items():
+                # Criar 5 exemplos por curso com variações
+                for _ in range(5):
                     vetor = np.zeros(len(caracteristicas))
-                    # Ativar características principais do curso
-                    for idx in caracs:
+                    # Ativar características principais
+                    for idx in indices:
                         vetor[idx] = 1
-                    # Adicionar pequeno ruído
-                    vetor += np.random.normal(0, 0.1, len(vetor))
+                    # Adicionar variações aleatórias
+                    vetor += np.random.normal(0, 0.2, len(vetor))
                     dados_treino.append(vetor)
-                    cursos_lista.append(curso)
+                    rotulos.append(curso)
             
             dados_treino = np.array(dados_treino)
             
-            # Aplicar PCA para visualização 2D
+            # Clusterização com K-Means
+            kmeans = KMeans(n_clusters=len(cursos_map), random_state=42, n_init=10)
+            clusters = kmeans.fit_predict(dados_treino)
+            
+            # Prever cluster do usuário
+            cluster_usuario = kmeans.predict(vetor_usuario.reshape(1, -1))[0]
+            
+            # Encontrar curso mais frequente no cluster do usuário
+            cursos_no_cluster = [rotulos[i] for i, c in enumerate(clusters) if c == cluster_usuario]
+            from collections import Counter
+            curso_ideal = Counter(cursos_no_cluster).most_common(1)[0][0]
+            
+            # --- VISUALIZAÇÃO DA SEGUNDA ETAPA ---
+            # Redução para 2D com PCA
             pca = PCA(n_components=2)
             dados_2d = pca.fit_transform(dados_treino)
             usuario_2d = pca.transform(vetor_usuario.reshape(1, -1))
             
-            # Clusterizar os cursos
-            kmeans = KMeans(n_clusters=len(cursos_map), random_state=42, n_init=10)
-            clusters = kmeans.fit_predict(dados_2d)
-            
-            # Determinar qual cluster o usuário pertence
-            cluster_usuario = kmeans.predict(usuario_2d)[0]
-            
-            # Encontrar o curso mais comum no cluster do usuário
-            cursos_no_cluster = [cursos_lista[i] for i, c in enumerate(clusters) if c == cluster_usuario]
-            from collections import Counter
-            curso_ideal = Counter(cursos_no_cluster).most_common(1)[0][0]
-            
-            # --- VISUALIZAÇÃO ---
-            fig, ax = plt.subplots(figsize=(10, 6))
-            
-            # Cores para os cursos
+            fig1, ax1 = plt.subplots(figsize=(10, 6))
             cores = plt.cm.get_cmap('tab10', len(cursos_map))
-            curso_para_cor = {curso: i for i, curso in enumerate(cursos_map.keys())}
+            
+            # Mapeamento de curso para cor
+            curso_para_indice = {curso: i for i, curso in enumerate(cursos_map.keys())}
             
             # Plotar pontos dos cursos
             for i, (x, y) in enumerate(dados_2d):
-                curso = cursos_lista[i]
-                ax.scatter(x, y, color=cores(curso_para_cor[curso]), 
+                curso = rotulos[i]
+                ax1.scatter(x, y, color=cores(curso_para_indice[curso]), 
                           label=curso if i < len(cursos_map) else "", s=100, alpha=0.7)
             
             # Plotar usuário
-            ax.scatter(usuario_2d[0, 0], usuario_2d[0, 1], color=cores(curso_para_cor[curso_ideal]), 
+            ax1.scatter(usuario_2d[0, 0], usuario_2d[0, 1], 
+                      color=cores(curso_para_indice[curso_ideal]),
                       marker="*", s=300, edgecolor="black", label="Você")
             
-            # Configurações do gráfico
-            ax.set_title("Sua Proximidade com os Cursos", pad=20)
-            ax.set_xlabel("Componente Principal 1")
-            ax.set_ylabel("Componente Principal 2")
-            ax.legend(bbox_to_anchor=(1.05, 1))
-            ax.grid(True, linestyle="--", alpha=0.3)
+            ax1.set_title("Sua Proximidade com os Cursos", pad=20)
+            ax1.set_xlabel("Componente Principal 1")
+            ax1.set_ylabel("Componente Principal 2")
+            ax1.legend(bbox_to_anchor=(1.05, 1))
+            ax1.grid(True, linestyle="--", alpha=0.3)
             
-            st.pyplot(fig)
+            # --- VISUALIZAÇÃO DA PRIMEIRA ETAPA ---
+            # Preparar dados para o gráfico inicial
+            fig2, ax2 = plt.subplots(figsize=(8, 4))
             
-            # --- RESULTADO FINAL ---
+            # Posições dos grupos
+            grupo_pos = {
+                "Humanas": (0, 0.1),
+                "Exatas": (1, 0.1)
+            }
+            
+            # Plotar grupos
+            for grupo, (x, y) in grupo_pos.items():
+                ax2.scatter(x, y, s=300, label=grupo, alpha=0.6)
+            
+            # Plotar usuário
+            user_x = 0 if st.session_state.perfil == "Humanas" else 1
+            ax2.scatter(user_x, 0.2, s=400, marker="*", 
+                       color='red', label="Você", edgecolor='black')
+            
+            ax2.set_title("Seu Agrupamento na Primeira Etapa")
+            ax2.set_xlim(-0.5, 1.5)
+            ax2.set_ylim(-0.1, 0.3)
+            ax2.set_xticks([0, 1])
+            ax2.set_xticklabels(["Humanas", "Exatas"])
+            ax2.set_yticks([])
+            ax2.legend()
+            ax2.grid(True, linestyle="--", alpha=0.3)
+            
+            # --- EXIBIR RESULTADOS ---
+            st.pyplot(fig1)
+            st.pyplot(fig2)
+            
             st.balloons()
             
             emoji_curso = {
-                "Estatística": "📊", "Matemática": "🧮", 
-                "Engenharias": "⚙️", "Ciência da Computação": "💻",
-                "Física": "🔭", "Direito": "⚖️", "História": "🏛️", 
-                "Letras": "📖", "Psicologia": "🧠", "Artes": "🎨",
-                "Ciências Sociais": "👥"
+                "Estatística": "📊", "Ciência da Computação": "💻",
+                "Engenharia Civil": "🏗️", "Engenharia Elétrica": "⚡",
+                "Matemática": "🧮", "Direito": "⚖️", 
+                "Psicologia": "🧠", "Administração": "📈",
+                "Comunicação Social": "📢", "Pedagogia": "📚"
             }.get(curso_ideal, "🎓")
             
             st.success(f"""
@@ -212,15 +245,22 @@ elif st.session_state.etapa == 2:
             **Características que mais combinam:**
             """)
             
-            # Listar características selecionadas que são relevantes para o curso
+            # Listar características relevantes
             caracs_relevantes = [
                 carac for i, carac in enumerate(caracteristicas) 
                 if (i in cursos_map[curso_ideal] and st.session_state.segunda_etapa_respostas[i])
             ]
             
-            for carac in caracs_relevantes[:5]:  # Mostrar no máximo 5
+            for carac in caracs_relevantes[:5]:
                 st.write(f"- {carac}")
+            
+            st.divider()
+            st.markdown("""
+            **📊 Como funciona a análise de perfil?**
+            
+            A técnica estatística conhecida como K-Means é amplamente utilizada em aplicativos de redes sociais como Instagram e TikTok. Já reparou que, ao criar uma conta no TikTok, ele pergunta que tipo de vídeos você gosta? Isso é parte de um processo de agrupamento, no qual o algoritmo tenta te colocar em um grupo com pessoas que têm preferências parecidas com as suas. Assim, ele identifica os estilos de vídeos que mais combinam com o seu perfil, com o objetivo de te manter engajado no aplicativo pelo maior tempo possível. Essa técnica também é usada para exibir anúncios que têm mais chance de agradar você. Entendeu agora por que às vezes aparece aquele anúncio exatamente sobre o que você estava pensando? Pois é... a estatística estava agindo o tempo todo — e você nem percebeu!
+            """)
 
     if st.button("↩️ Voltar para a Parte 1"):
         st.session_state.etapa = 1
-        st.rerun()    
+        st.rerun()     
