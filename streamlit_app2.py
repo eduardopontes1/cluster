@@ -6,7 +6,7 @@ import numpy as np
 
 # Configuração da página
 st.set_page_config(page_title="Perfil Acadêmico", layout="centered")
-st.title("🔍 Descubra seu perfil Acadêmico")
+st.title("🔍 Descubra seu perfil Acadêmico ")
 
 # Variáveis de sessão para controle de estado
 if 'etapa' not in st.session_state:
