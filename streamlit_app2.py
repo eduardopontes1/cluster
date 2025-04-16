@@ -63,52 +63,52 @@ if st.session_state.etapa == 1:
             st.session_state.segunda_etapa_respostas = [False] * 12
             st.rerun()
 
-# --- SEGUNDA ETAPA (OTIMIZADA) ---
+# --- SEGUNDA ETAPA ---
 elif st.session_state.etapa == 2:
     st.success(f"Perfil principal: **{st.session_state.perfil}**")
     st.divider()
     st.subheader("📌 **Parte 2/2:** Selecione as 5 características que mais combinam com você")
     
-    # Características ajustadas para melhor clusterização
+    # Características genéricas sem menção a cursos
     caracteristicas = {
         "Exatas": [
-            "Gosto de analisar dados e estatísticas (Estatística)",
-            "Tenho facilidade com cálculos complexos (Matemática/Engenharias)",
-            "Me interesso por programação e algoritmos (Computação)",
-            "Gosto de resolver problemas práticos (Engenharias)",
-            "Tenho curiosidade sobre como máquinas funcionam (Engenharias)",
-            "Prefiro raciocínio lógico a subjetivo (Exatas)",
-            "Gosto de projetar e construir coisas (Engenharia Civil)",
-            "Me interesso por experimentos científicos (Física/Química)",
-            "Tenho habilidade com números e gráficos (Estatística)",
-            "Gosto de desafios matemáticos (Matemática)",
-            "Me interesso por inteligência artificial (Computação)",
-            "Tenho facilidade com modelos 3D (Engenharia/Arquitetura)"
+            "Gosto de analisar dados e padrões",
+            "Tenho facilidade com cálculos complexos",
+            "Me interesso por programação e algoritmos",
+            "Gosto de resolver problemas práticos",
+            "Tenho curiosidade sobre como as coisas funcionam",
+            "Prefiro raciocínio lógico a subjetivo",
+            "Gosto de projetar e construir coisas",
+            "Me interesso por experimentos científicos",
+            "Tenho habilidade com números e gráficos",
+            "Gosto de entender reações e transformações",
+            "Me interesso por tecnologia avançada",
+            "Tenho facilidade com modelos tridimensionais"
         ],
         "Humanas": [
-            "Gosto de ler e interpretar textos (Letras/História)",
-            "Tenho facilidade em me expressar oralmente (Direito/Comunicação)",
-            "Me interesso por entender comportamentos (Psicologia)",
-            "Gosto de debater e argumentar (Direito/Filosofia)",
-            "Tenho sensibilidade artística (Artes/Design)",
-            "Me preocupo com questões sociais (Serviço Social)",
-            "Gosto de estudar culturas e sociedades (História/Antropologia)",
-            "Tenho facilidade com idiomas (Letras/Rel. Internacionais)",
-            "Prefiro trabalhos colaborativos (Pedagogia/Psicologia)",
-            "Gosto de analisar obras artísticas (Artes/História)",
-            "Me interesso por políticas públicas (Direito/Administração)",
-            "Tenho habilidade para mediar conflitos (Psicologia/Direito)"
+            "Gosto de ler e interpretar textos",
+            "Tenho facilidade em me expressar oralmente",
+            "Me interesso por entender comportamentos",
+            "Gosto de debater e argumentar",
+            "Tenho sensibilidade artística",
+            "Me preocupo com questões sociais",
+            "Gosto de estudar culturas e sociedades",
+            "Tenho facilidade com idiomas",
+            "Prefiro trabalhos colaborativos",
+            "Gosto de analisar obras criativas",
+            "Me interesso por questões políticas",
+            "Tenho habilidade para mediar conflitos"
         ]
     }[st.session_state.perfil]
 
-    # Mapeamento curso-características com pesos otimizados
+    # Mapeamento curso-características com Química no lugar de Matemática
     cursos_map = {
         "Exatas": {
-            "Estatística": [0, 1, 8, 5, 9],
-            "Ciência da Computação": [2, 3, 10, 5, 11],
-            "Engenharia Civil": [3, 6, 1, 4, 11],
+            "Estatística": [0, 1, 5, 8, 11],
+            "Ciência da Computação": [2, 3, 5, 10, 11],
+            "Engenharia Civil": [3, 6, 1, 4, 7],
             "Engenharia Elétrica": [3, 4, 7, 5, 10],
-            "Matemática": [1, 5, 9, 0, 8]
+            "Química": [4, 7, 9, 1, 5]
         },
         "Humanas": {
             "Direito": [1, 3, 11, 4, 10],
@@ -134,11 +134,42 @@ elif st.session_state.etapa == 2:
         if len(selecoes) != 5:
             st.warning("Selecione exatamente 5 características!")
         else:
-            # --- PRIMEIRO GRÁFICO ---
+            # --- PRIMEIRO GRÁFICO (Agrupamento Humanas/Exatas) ---
             fig1, ax1 = plt.subplots(figsize=(10, 6))
-            # ... (código do primeiro gráfico mantido igual) ...
-
-            # --- SEGUNDO GRÁFICO (COM K-MEANS OTIMIZADO) ---
+            
+            # Gerar pontos aleatórios para cada grupo
+            np.random.seed(42)
+            
+            # Pontos para Humanas
+            humanas_x = np.random.normal(0, 0.15, 20)
+            humanas_y = np.random.normal(0, 0.15, 20)
+            
+            # Pontos para Exatas
+            exatas_x = np.random.normal(1, 0.15, 20)
+            exatas_y = np.random.normal(0, 0.15, 20)
+            
+            # Plotar grupos
+            ax1.scatter(humanas_x, humanas_y, color='blue', alpha=0.6, label='Perfis de Humanas', s=80)
+            ax1.scatter(exatas_x, exatas_y, color='green', alpha=0.6, label='Perfis de Exatas', s=80)
+            
+            # Plotar usuário
+            user_x = 0 if st.session_state.perfil == "Humanas" else 1
+            user_y = 0.3  # Posicionado acima dos outros pontos
+            ax1.scatter(user_x, user_y, s=200, marker="*", 
+                       color='red', label="Você", edgecolor='black')
+            
+            ax1.set_title("Seu Agrupamento na Primeira Etapa", pad=20)
+            ax1.set_xlim(-0.5, 1.5)
+            ax1.set_ylim(-0.5, 0.5)
+            ax1.set_xticks([0, 1])
+            ax1.set_xticklabels(["Humanas", "Exatas"])
+            ax1.set_yticks([])
+            ax1.legend(bbox_to_anchor=(1.05, 1))
+            ax1.grid(True, linestyle="--", alpha=0.3)
+            
+            st.pyplot(fig1)
+            
+            # --- SEGUNDO GRÁFICO (Cursos específicos) ---
             # 1. Preparação dos dados com pesos reforçados
             dados_treino = []
             rotulos = []
@@ -146,7 +177,7 @@ elif st.session_state.etapa == 2:
             for curso, indices in cursos_map.items():
                 for _ in range(15):  # Mais exemplos por curso
                     vetor = np.zeros(len(caracteristicas))
-                    # Peso maior para características principais (1.5)
+                    # Peso maior para características principais
                     for idx in indices:
                         vetor[idx] = 1.5
                     # Adiciona variação controlada
@@ -160,13 +191,13 @@ elif st.session_state.etapa == 2:
             kmeans = KMeans(
                 n_clusters=len(cursos_map),
                 random_state=42,
-                n_init=20,  # Mais inicializações
-                max_iter=300,  # Mais iterações
-                algorithm='elkan'  # Algoritmo mais eficiente
+                n_init=20,
+                max_iter=300,
+                algorithm='elkan'
             )
             clusters = kmeans.fit_predict(dados_treino)
             
-            # 3. Previsão para o usuário com pesos reforçados
+            # 3. Previsão para o usuário
             vetor_usuario = np.array([1.2 if carac in selecoes else 0 for carac in caracteristicas])
             cluster_usuario = kmeans.predict(vetor_usuario.reshape(1, -1))[0]
             
@@ -220,7 +251,7 @@ elif st.session_state.etapa == 2:
             emoji_curso = {
                 "Estatística": "📊", "Ciência da Computação": "💻",
                 "Engenharia Civil": "🏗️", "Engenharia Elétrica": "⚡",
-                "Matemática": "🧮", "Direito": "⚖️", 
+                "Química": "🧪", "Direito": "⚖️", 
                 "Psicologia": "🧠", "História": "🏛️",
                 "Letras": "📖", "Artes": "🎨"
             }.get(curso_ideal, "🎓")
@@ -241,8 +272,15 @@ elif st.session_state.etapa == 2:
                 if st.session_state.segunda_etapa_respostas[i]
             ]
             for idx, carac in sorted(caracs_principais, key=lambda x: x[0]):
-                st.write(f"- {carac.split(' (')[0]}")
+                st.write(f"- {carac}")
+
+            st.divider()
+            st.markdown("""
+            **📊 Como funciona a análise de perfil?**
+            
+            A técnica estatística conhecida como K-Means é amplamente utilizada em aplicativos de redes sociais como Instagram e TikTok. Já reparou que, ao criar uma conta no TikTok, ele pergunta que tipo de vídeos você gosta? Isso é parte de um processo de agrupamento, no qual o algoritmo tenta te colocar em um grupo com pessoas que têm preferências parecidas com as suas. Assim, ele identifica os estilos de vídeos que mais combinam com o seu perfil, com o objetivo de te manter engajado no aplicativo pelo maior tempo possível. Essa técnica também é usada para exibir anúncios que têm mais chance de agradar você. Entendeu agora por que às vezes aparece aquele anúncio exatamente sobre o que você estava pensando? Pois é... a estatística estava agindo o tempo todo — e você nem percebeu!
+            """)
 
     if st.button("↩️ Voltar para a Parte 1"):
         st.session_state.etapa = 1
-        st.rerun()    
+        st.rerun()  
