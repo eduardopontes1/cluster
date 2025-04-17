@@ -247,7 +247,7 @@ elif st.session_state.etapa == 2:
             ax1.set_yticks([])
             ax1.legend(bbox_to_anchor=(1.05, 1))
             ax1.grid(True, linestyle="--", alpha=0.3)
-            
+            fig1.subplots_adjust(right=0.75)
             st.pyplot(fig1)
             
             # SEGUNDO GRÁFICO (Cursos específicos)
