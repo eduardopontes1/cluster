@@ -281,7 +281,8 @@ elif st.session_state.etapa == 2:
             ) 
    
             ax2.set_title("Sua Proximidade com os Cursos (Análise de Cluster)", pad=20)
-            ax2.legend(bbox_to_anchor=(1.05,1))
+            ax2.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
+            fig2.subplots_adjust(right=0.75)
             st.pyplot(fig2)
 
             st.divider()
