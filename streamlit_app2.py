@@ -224,42 +224,14 @@ elif st.session_state.etapa == 2:
                 curso_ideal = max(scores.items(), key=lambda x: x[1])[0]
             else:
                 curso_ideal = contagem.most_common(1)[0][0]
-            
+
+
+
+
+                   
             # 5. Visualização com PCA
-            pca = PCA(n_components=2)
-            dados_2d = pca.fit_transform(dados_treino)
-            usuario_2d = pca.transform(vetor_usuario.reshape(1, -1))
-            
-            fig2, ax2 = plt.subplots(figsize=(10, 6))
-            cores = plt.cm.get_cmap('tab10', len(cursos_map))
-            
-            # Plotagem dos clusters
-            for i, curso in enumerate(cursos_map.keys()):
-                pontos_curso = dados_2d[[j for j, cur in enumerate(rotulos) if cur == curso]]
-                ax2.scatter(
-                    pontos_curso[:, 0], pontos_curso[:, 1],
-                    color=cores(i),
-                    label=curso,
-                    alpha=0.6,
-                    s=100
-                )
-            
-            # Posicionamento preciso da estrela
-            centroide = np.mean(dados_2d[[i for i, curso in enumerate(rotulos) if curso == curso_ideal]], axis=0)
-            ax2.scatter(
-                centroide[0], centroide[1] + 0.15,
-                color=cores(list(cursos_map.keys()).index(curso_ideal)),
-                marker="*",
-                s=400,
-                edgecolor="black",
-                label="Você"
-            )
-            
-            ax2.set_title("Sua Proximidade com os Cursos (Análise de Cluster)", pad=20)
-            ax2.legend(bbox_to_anchor=(1.05, 1))
-            st.pyplot(fig2)
-            
-            # --- RESULTADO FINAL ---
+
+           # --- RESULTADO FINAL ---
             st.balloons()
             emoji_curso = {
                 "Estatística": "📊", "Ciência da Computação": "💻",
@@ -288,6 +260,40 @@ elif st.session_state.etapa == 2:
                 st.write(f"- {carac}")
 
             st.divider()
+            
+            pca = PCA(n_components=2)
+            dados_2d = pca.fit_transform(dados_treino)
+            usuario_2d = pca.transform(vetor_usuario.reshape(1, -1))
+            
+            fig2, ax2 = plt.subplots(figsize=(10, 6))
+            cores = plt.cm.get_cmap('tab10', len(cursos_map))
+            
+            # Plotagem dos clusters
+            for i, curso in enumerate(cursos_map.keys()):
+                pontos_curso = dados_2d[[j for j, cur in enumerate(rotulos) if cur == curso]]
+                ax2.scatter(
+                    pontos_curso[:, 0], pontos_curso[:, 1],
+                    color=cores(i),
+                    label=curso,
+                    alpha=0.6,
+                    s=100
+                )
+            
+            # Posicionamento preciso da estrela
+            centroide = np.mean(dados_2d[[i for i, curso in enumerate(rotulos) if curso == curso_ideal]], axis=0)
+            ax2.scatter(
+                centroide[0], centroide[1] + 0.15,
+                color=cores(list(cursos_map.keys()).index(curso_ideal)),
+                marker="*",
+                s=400,
+                edgecolor="black",
+                label="Você"
+            ) 
+   
+            ax2.set_title("Sua Proximidade com os Cursos (Análise de Cluster)", pad=20)
+            ax2.legend(bbox_to_anchor=(1.05,1))
+            st.pyplot(fig2)
+            
             st.markdown("""
             Percebe agora como as redes sociais conseguem te mostrar conteúdos 
             que parecem feitos sob medida? Pois é...era a estatística trabalhando o tempo todo e você nem percebeu!
