@@ -254,7 +254,7 @@ elif st.session_state.etapa == 2:
             ax1.set_xticklabels(["Humanas", "Exatas"])
             ax1.set_yticks([])
             ax1.legend(bbox_to_anchor=(1.05, 1))
-            ax2.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
+            ax1.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
             fig1.subplots_adjust(right=0.75)
             st.pyplot(fig1)
 
