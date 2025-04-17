@@ -31,15 +31,15 @@ if st.session_state.etapa == 1:
     st.write("Marque os conteúdos com que você mais se identifica:")
     
     itens = [
-        {"texto": "Escrever poemas ou crônicas", "valor": 0},
+        {"texto": "Escrever/ler poemas ou crônicas", "valor": 0},
         {"texto": "Resolver desafios de programação", "valor": 1},
         {"texto": "Debater sobre filosofia/sociologia", "valor": 0},
         {"texto": "Projetar experimentos científicos", "valor": 1},
-        {"texto": "Analisar obras de arte", "valor": 0},
+        {"texto": "Me exercitar", "valor": 0},
         {"texto": "Desenvolver fórmulas matemáticas", "valor": 1},
         {"texto": "Ler sobre política internacional", "valor": 0},
         {"texto": "Estudar novas tecnologias", "valor": 1},
-        {"texto": "Interpretar textos literários", "valor": 0},
+        {"texto": "Cuidar das pessoas", "valor": 0},
         {"texto": "Trabalhar com cálculos complexos", "valor": 1}
     ]
     
@@ -102,7 +102,7 @@ elif st.session_state.etapa == 2:
             "Gosto de debater e argumentar",
             "Sou criativo",
             "Me preocupo com questões sociais",
-            "Gosto de estudar culturas e sociedades",
+            "Gosto de me exercitar",
             "Tenho facilidade com idiomas",
             "Prefiro trabalhos colaborativos",
             "Gosto de analisar",
@@ -123,7 +123,7 @@ elif st.session_state.etapa == 2:
         "Humanas": {
             "Direito": [1, 3, 11, 4, 10],
             "Medicina/Psicologia/Odontologia": [2, 5, 8, 11, 9],
-            "História": [0, 6, 7, 9, 10],
+            "Educação Física": [1, 2, 8, 8, 9],
             "Letras": [0, 1, 7, 9, 11],
             "Marketing": [4, 6, 9, 2, 8]
         }
@@ -284,12 +284,14 @@ elif st.session_state.etapa == 2:
             ax2.set_title("Sua Proximidade com os Cursos (Análise de Cluster)", pad=20)
             ax2.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
             fig2.subplots_adjust(right=0.75)
-            st.pyplot(fig2)
+
 
             st.divider()
             st.markdown(""" 
-            Percebe agora como as redes sociais conseguem te mostrar conteúdos 
-            que parecem feitos sob medida? Pois é...era a estatística trabalhando o tempo todo e você nem percebeu!
+            Na internet, muitas vezes não entregamos nossos dados de forma direta, mas basta assistir certos tipos de vídeos por mais tempo ou clicar em determinados conteúdos 
+            para que os algoritmos comecem a nos entender. Com base nesses padrões de comportamento, somos agrupados em perfis que se parecem com o nosso – tudo
+            isso por meio de técnicas como o KMeans. Assim, fica fácil para as redes sociais nos mostrarem conteúdos que parecem feitos sob medida. Entendeu agora como elas acertam 
+            tanto? Era a estatística agindo o tempo todo... e você nem percebeu.
             """)
 
     if st.button("↩️ Voltar"):
