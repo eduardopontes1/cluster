@@ -125,7 +125,7 @@ elif st.session_state.etapa == 2:
             "Medicina/Psicologia/Odontologia": [2, 5, 8, 11, 9],
             "Educação Física": [1, 2, 8, 8, 9],
             "Letras": [0, 1, 7, 9, 11],
-            "Marketing": [4, 6, 9, 2, 8]
+            "Marketing": [4, 7, 9, 2, 8]
         }
     }[st.session_state.perfil]
 
