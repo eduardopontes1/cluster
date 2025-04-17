@@ -4,11 +4,8 @@ import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from collections import Counter
-
-# Configuração da página
 st.set_page_config(page_title="Perfil Acadêmico", layout="centered")
 st.title("🔍 Descubra seu perfil Acadêmico")
-
 st.markdown("""
             **📊 Como funciona a análise de perfil?**
             
@@ -18,18 +15,13 @@ st.markdown("""
             combinam com o seu perfil, com o objetivo de te manter engajado no aplicativo pelo maior tempo possível. Essa técnica também é usada para 
             exibir anúncios que têm mais chance de agradar você.
             """)
-
-# Variáveis de sessão
 if 'etapa' not in st.session_state:
     st.session_state.etapa = 1
     st.session_state.perfil = None
     st.session_state.respostas = None
     st.session_state.segunda_etapa_respostas = None
-
-# --- PRIMEIRA ETAPA ---
 if st.session_state.etapa == 1:
     st.write("Marque os conteúdos com que você mais se identifica:")
-    
     itens = [
         {"texto": "Escrever/ler poemas ou crônicas", "valor": 0},
         {"texto": "Resolver desafios de programação", "valor": 1},
@@ -42,12 +34,10 @@ if st.session_state.etapa == 1:
         {"texto": "Cuidar das pessoas", "valor": 0},
         {"texto": "Trabalhar com cálculos complexos", "valor": 1}
     ]
-    
     respostas = [0] * len(itens)
     for i, item in enumerate(itens):
         if st.checkbox(item["texto"], key=f"item_{i}"):
             respostas[i] = 1
-
     if st.button("🔎 Avançar"):
         if sum(respostas) < 3:
             st.warning("Selecione pelo menos 3 conteúdos!")
@@ -65,15 +55,12 @@ if st.session_state.etapa == 1:
                 [0,1,1,1,0,1,0,0,0,1], [0,1,0,1,0,1,0,1,0,0]
             ])
             X_treino = np.vstack((grupo_humanas, grupo_exatas))
-            
             kmeans = KMeans(n_clusters=2, random_state=42, n_init=10).fit(X_treino)
             st.session_state.perfil = "Humanas" if kmeans.predict(X_novo)[0] == 0 else "Exatas"
             st.session_state.respostas = respostas
             st.session_state.etapa = 2
             st.session_state.segunda_etapa_respostas = [False] * 12
             st.rerun()
-
-# --- SEGUNDA ETAPA ---
 elif st.session_state.etapa == 2:
     st.success(f"Perfil principal: **{st.session_state.perfil}**")
     st.divider()
@@ -125,7 +112,7 @@ elif st.session_state.etapa == 2:
             "Medicina/Psicologia/Odontologia": [2, 5, 8, 11, 9],
             "Educação Física": [1, 2, 8, 8, 9],
             "Letras": [0, 1, 7, 9, 11],
-            "Marketing": [4, 7, 9, 2, 8]
+            "Marketing": [4, 0, 9, 2, 8]
         }
     }[st.session_state.perfil]
 
