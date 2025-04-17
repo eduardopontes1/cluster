@@ -7,6 +7,16 @@ from collections import Counter
 
 # Configuração da página
 st.set_page_config(page_title="Perfil Acadêmico", layout="centered")
+st.markdown("""
+            **📊 Como funciona a análise de perfil?**
+            
+            A técnica estatística conhecida como K-Means é amplamente utilizada em aplicativos de redes sociais como Instagram e TikTok. Já reparou que, 
+            ao criar uma conta no TikTok, ele pergunta que tipo de vídeos você gosta? Isso é parte de um processo de agrupamento, no qual o algoritmo 
+            tenta te colocar em um grupo com pessoas que têm preferências parecidas com as suas. Assim, ele identifica os estilos de vídeos que mais 
+            combinam com o seu perfil, com o objetivo de te manter engajado no aplicativo pelo maior tempo possível. Essa técnica também é usada para 
+            exibir anúncios que têm mais chance de agradar você.
+            """)
+
 st.title("🔍 Descubra seu perfil Acadêmico")
 
 # Variáveis de sessão
@@ -18,7 +28,7 @@ if 'etapa' not in st.session_state:
 
 # --- PRIMEIRA ETAPA ---
 if st.session_state.etapa == 1:
-    st.write("**Parte 1/2:** Marque os conteúdos com que você mais se identifica:")
+    st.write("Marque os conteúdos com que você mais se identifica:")
     
     itens = [
         {"texto": "Escrever poemas ou crônicas", "valor": 0},
@@ -38,7 +48,7 @@ if st.session_state.etapa == 1:
         if st.checkbox(item["texto"], key=f"item_{i}"):
             respostas[i] = 1
 
-    if st.button("🔎 Avançar para a Parte 2"):
+    if st.button("🔎 Avançar"):
         if sum(respostas) < 3:
             st.warning("Selecione pelo menos 3 conteúdos!")
         else:
@@ -67,7 +77,7 @@ if st.session_state.etapa == 1:
 elif st.session_state.etapa == 2:
     st.success(f"Perfil principal: **{st.session_state.perfil}**")
     st.divider()
-    st.subheader("📌 **Parte 2/2:** Selecione as 5 características que mais combinam com você")
+    st.subheader("📌Selecione as 5 características que mais combinam com você")
     
     # Características genéricas sem menção a cursos
     caracteristicas = {
@@ -83,19 +93,19 @@ elif st.session_state.etapa == 2:
             "Tenho habilidade com números e gráficos",
             "Gosto de entender reações e transformações",
             "Me interesso por tecnologia avançada",
-            "Tenho facilidade com modelos tridimensionais"
+            "Gosto de resolver enigmas"
         ],
         "Humanas": [
             "Gosto de ler e interpretar textos",
             "Tenho facilidade em me expressar oralmente",
             "Me interesso por entender comportamentos",
             "Gosto de debater e argumentar",
-            "Tenho sensibilidade artística",
+            "Sou criativo",
             "Me preocupo com questões sociais",
             "Gosto de estudar culturas e sociedades",
             "Tenho facilidade com idiomas",
             "Prefiro trabalhos colaborativos",
-            "Gosto de analisar obras criativas",
+            "Gosto de analisar",
             "Me interesso por questões políticas",
             "Tenho habilidade para mediar conflitos"
         ]
@@ -112,10 +122,10 @@ elif st.session_state.etapa == 2:
         },
         "Humanas": {
             "Direito": [1, 3, 11, 4, 10],
-            "Psicologia": [2, 5, 8, 11, 9],
+            "Medicina/Psicologia/Odontologia": [2, 5, 8, 11, 9],
             "História": [0, 6, 7, 9, 10],
             "Letras": [0, 1, 7, 9, 11],
-            "Artes": [4, 6, 9, 2, 8]
+            "Marketing": [4, 6, 9, 2, 8]
         }
     }[st.session_state.perfil]
 
@@ -252,8 +262,8 @@ elif st.session_state.etapa == 2:
                 "Estatística": "📊", "Ciência da Computação": "💻",
                 "Engenharia Civil": "🏗️", "Engenharia Elétrica": "⚡",
                 "Química": "🧪", "Direito": "⚖️", 
-                "Psicologia": "🧠", "História": "🏛️",
-                "Letras": "📖", "Artes": "🎨"
+                "Medicina/Psicologia/Odontologia": "🧠", "História": "🏛️",
+                "Letras": "📖", "Marketing": "🎨"
             }.get(curso_ideal, "🎓")
             
             st.success(f"""
@@ -276,11 +286,10 @@ elif st.session_state.etapa == 2:
 
             st.divider()
             st.markdown("""
-            **📊 Como funciona a análise de perfil?**
-            
-            A técnica estatística conhecida como K-Means é amplamente utilizada em aplicativos de redes sociais como Instagram e TikTok. Já reparou que, ao criar uma conta no TikTok, ele pergunta que tipo de vídeos você gosta? Isso é parte de um processo de agrupamento, no qual o algoritmo tenta te colocar em um grupo com pessoas que têm preferências parecidas com as suas. Assim, ele identifica os estilos de vídeos que mais combinam com o seu perfil, com o objetivo de te manter engajado no aplicativo pelo maior tempo possível. Essa técnica também é usada para exibir anúncios que têm mais chance de agradar você. Entendeu agora por que às vezes aparece aquele anúncio exatamente sobre o que você estava pensando? Pois é... a estatística estava agindo o tempo todo — e você nem percebeu!
+            Percebe agora como as redes sociais conseguem te mostrar conteúdos 
+            que parecem feitos sob medida? Pois é... era a estatística trabalhando o tempo todo e você nem percebeu!
             """)
 
-    if st.button("↩️ Voltar para a Parte 1"):
+    if st.button("↩️ Voltar"):
         st.session_state.etapa = 1
         st.rerun()  
