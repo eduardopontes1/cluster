@@ -147,35 +147,6 @@ elif st.session_state.etapa == 2:
         if len(selecoes) != 5:
             st.warning("Selecione exatamente 5 características!")
         else:
-             # --- RESULTADO FINAL ---
-            st.balloons()
-            emoji_curso = {
-                "Estatística": "📊", "Ciência da Computação": "💻",
-                "Engenharia Civil": "🏗️", "Engenharia Elétrica": "⚡",
-                "Química": "🧪", "Direito": "⚖️", 
-                "Medicina/Psicologia/Odontologia": "🧠", "História": "🏛️",
-                "Letras": "📖", "Marketing": "🎨"
-            }.get(curso_ideal, "🎓")
-            
-            st.success(f"""
-            **Resultado Final:**
-            
-            🎯 **Você tem perfil de {st.session_state.perfil}** e se encaixa melhor em:
-            {emoji_curso} **{curso_ideal}**
-            
-            **Características selecionadas que mais contribuíram:**
-            """)
-            
-            # Mostra as características mais relevantes
-            indices_curso = cursos_map[curso_ideal]
-            caracs_principais = [
-                (i, caracteristicas[i]) for i in indices_curso 
-                if st.session_state.segunda_etapa_respostas[i]
-            ]
-            for idx, carac in sorted(caracs_principais, key=lambda x: x[0]):
-                st.write(f"- {carac}")
-
-            st.divider()
            # --- PRIMEIRO GRÁFICO (Agrupamento Humanas/Exatas) ---
             fig1, ax1 = plt.subplots(figsize=(10, 6))
             
@@ -294,7 +265,36 @@ elif st.session_state.etapa == 2:
             ax2.set_title("Sua Proximidade com os Cursos (Análise de Cluster)", pad=20)
             ax2.legend(bbox_to_anchor=(1.05,1))
             st.pyplot(fig2)
+                 # --- RESULTADO FINAL ---
+            st.balloons()
+            emoji_curso = {
+                "Estatística": "📊", "Ciência da Computação": "💻",
+                "Engenharia Civil": "🏗️", "Engenharia Elétrica": "⚡",
+                "Química": "🧪", "Direito": "⚖️", 
+                "Medicina/Psicologia/Odontologia": "🧠", "História": "🏛️",
+                "Letras": "📖", "Marketing": "🎨"
+            }.get(curso_ideal, "🎓")
             
+            st.success(f"""
+            **Resultado Final:**
+            
+            🎯 **Você tem perfil de {st.session_state.perfil}** e se encaixa melhor em:
+            {emoji_curso} **{curso_ideal}**
+            
+            **Características selecionadas que mais contribuíram:**
+            """)
+            
+            # Mostra as características mais relevantes
+            indices_curso = cursos_map[curso_ideal]
+            caracs_principais = [
+                (i, caracteristicas[i]) for i in indices_curso 
+                if st.session_state.segunda_etapa_respostas[i]
+            ]
+            for idx, carac in sorted(caracs_principais, key=lambda x: x[0]):
+                st.write(f"- {carac}")
+
+            st.divider()
+        
             st.markdown(""" 
             Percebe agora como as redes sociais conseguem te mostrar conteúdos 
             que parecem feitos sob medida? Pois é...era a estatística trabalhando o tempo todo e você nem percebeu!
