@@ -7,6 +7,10 @@ from collections import Counter
 
 # Configuração da página
 st.set_page_config(page_title="Perfil Acadêmico", layout="centered")
+
+
+st.title("🔍 Descubra seu perfil Acadêmico")
+
 st.markdown("""
             **📊 Como funciona a análise de perfil?**
             
@@ -17,7 +21,6 @@ st.markdown("""
             exibir anúncios que têm mais chance de agradar você.
             """)
 
-st.title("🔍 Descubra seu perfil Acadêmico")
 
 # Variáveis de sessão
 if 'etapa' not in st.session_state:
@@ -287,10 +290,10 @@ elif st.session_state.etapa == 2:
             st.divider()
             st.markdown("""
             Percebe agora como as redes sociais conseguem te mostrar conteúdos 
-            que parecem feitos sob medida? Pois é... era a estatística trabalhando o tempo todo e você nem percebeu!
+            que parecem feitos sob medida? Pois é...era a estatística trabalhando o tempo todo e você nem percebeu!
             """)
 
     if st.button("↩️ Voltar"):
         st.session_state.etapa = 1
         st.rerun()  
-    
+       
