@@ -295,12 +295,12 @@ elif st.session_state.etapa == 2:
             ax2.legend(bbox_to_anchor=(1.05,1))
             st.pyplot(fig2)
             
-            st.markdown("""
+            st.markdown(""" 
             Percebe agora como as redes sociais conseguem te mostrar conteúdos 
             que parecem feitos sob medida? Pois é...era a estatística trabalhando o tempo todo e você nem percebeu!
             """)
 
     if st.button("↩️ Voltar"):
         st.session_state.etapa = 1
-        st.rerun()  
+        st.rerun()      
        
