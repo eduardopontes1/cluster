@@ -233,23 +233,27 @@ elif st.session_state.etapa == 2:
             ax1.scatter(humanas_x, humanas_y, color='blue', alpha=0.6, label='Perfis de Humanas', s=80)
             ax1.scatter(exatas_x, exatas_y, color='green', alpha=0.6, label='Perfis de Exatas', s=80)
             
+
             # Plotar usuário
-            user_x = 0 if st.session_state.perfil == "Humanas" else 1
-            user_y = 0.3  # Posicionado acima dos outros pontos
-            ax1.scatter(user_x, user_y, s=200, marker="*", 
-                       color='red', label="Você", edgecolor='black')
-            
-            ax1.set_title("Seu Agrupamento na Primeira Etapa", pad=20)
-            ax1.set_xlim(-0.5, 1.5)
-            ax1.set_ylim(-0.5, 0.5)
-            ax1.set_xticks([0, 1])
-            ax1.set_xticklabels(["Humanas", "Exatas"])
-            ax1.set_yticks([])
-            ax1.legend(bbox_to_anchor=(1.05, 1))
-            ax1.grid(True, linestyle="--", alpha=0.3)
-            fig1.subplots_adjust(right=1.5)       
-            st.pyplot(fig1)
-            
+           user_x = 0 if st.session_state.perfil == "Humanas" else 1
+           user_y = 0.3  # Posicionado acima dos outros pontos
+           ax1.scatter(user_x, user_y, s=200, marker="*", 
+           color='red', label="Você", edgecolor='black')
+
+           ax1.set_title("Seu Agrupamento na Primeira Etapa", pad=20)
+           ax1.set_xlim(-0.5, 1.5)
+           ax1.set_ylim(-0.5, 0.5)
+           ax1.set_xticks([0, 1])
+           ax1.set_xticklabels(["Humanas", "Exatas"])
+           ax1.set_yticks([])
+           ax1.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
+           ax1.grid(True, linestyle="--", alpha=0.3)
+
+           # Apenas ajusta layout sem distorcer o gráfico
+           fig1.tight_layout()
+
+           st.pyplot(fig1)
+       
             # SEGUNDO GRÁFICO (Cursos específicos)
             pca = PCA(n_components=2)
             dados_2d = pca.fit_transform(dados_treino)
