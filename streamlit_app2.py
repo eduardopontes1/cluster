@@ -42,7 +42,6 @@ if st.session_state.etapa == 1:
         if sum(respostas) < 3:
             st.warning("Selecione pelo menos 3 conteúdos!")
         else:
-            # Classificação usando K-means
             X_novo = np.array(respostas).reshape(1, -1)
             grupo_humanas = np.array([
                 [1,0,1,0,1,0,1,0,1,0], [0,0,1,0,1,0,0,0,1,0],
@@ -65,8 +64,6 @@ elif st.session_state.etapa == 2:
     st.success(f"Perfil principal: **{st.session_state.perfil}**")
     st.divider()
     st.subheader("📌Selecione as 5 características que mais combinam com você")
-    
-    # Características genéricas sem menção a cursos
     caracteristicas = {
         "Exatas": [
             "Gosto de analisar dados e padrões",
@@ -97,8 +94,6 @@ elif st.session_state.etapa == 2:
             "Tenho habilidade para mediar conflitos"
         ]
     }[st.session_state.perfil]
-
-    # Mapeamento curso-características com Química no lugar de Matemática
     cursos_map = {
         "Exatas": {
             "Estatística": [0, 1, 5, 8, 11],
@@ -115,8 +110,6 @@ elif st.session_state.etapa == 2:
             "Marketing": [4, 0, 9, 2, 8]
         }
     }[st.session_state.perfil]
-
-    # Atualizar seleções mantendo estado
     cols = st.columns(2)
     selecoes = []
     for i, carac in enumerate(caracteristicas):
@@ -147,8 +140,6 @@ elif st.session_state.etapa == 2:
                     rotulos.append(curso)
             
             dados_treino = np.array(dados_treino)
-            
-            # 2. Clusterização com K-Means otimizado
             kmeans = KMeans(
                 n_clusters=len(cursos_map),
                 random_state=42,
@@ -157,23 +148,15 @@ elif st.session_state.etapa == 2:
                 algorithm='elkan'
             )
             clusters = kmeans.fit_predict(dados_treino)
-            
-            # 3. Previsão para o usuário
             vetor_usuario = np.array([1.2 if carac in selecoes else 0 for carac in caracteristicas])
             cluster_usuario = kmeans.predict(vetor_usuario.reshape(1, -1))[0]
-            
-            # 4. Determinação do curso ideal com fallback
             cursos_no_cluster = [rotulos[i] for i, c in enumerate(clusters) if c == cluster_usuario]
             contagem = Counter(cursos_no_cluster)
-            
-            # Fallback para seleções mistas
             if len(contagem) > 2:
                 scores = {curso: sum(vetor_usuario[indices]) for curso, indices in cursos_map.items()}
                 curso_ideal = max(scores.items(), key=lambda x: x[1])[0]
             else:
                 curso_ideal = contagem.most_common(1)[0][0]
-
-            # --- RESULTADO FINAL ---
             st.balloons()
             emoji_curso = {
                 "Estatística": "📊", "Ciência da Computação": "💻",
@@ -191,8 +174,6 @@ elif st.session_state.etapa == 2:
             
             **Características selecionadas que mais contribuíram:**
             """)
-            
-            # Mostra as características mais relevantes
             indices_curso = cursos_map[curso_ideal]
             caracs_principais = [
                 (i, caracteristicas[i]) for i in indices_curso 
@@ -200,31 +181,21 @@ elif st.session_state.etapa == 2:
             ]
             for idx, carac in sorted(caracs_principais, key=lambda x: x[0]):
                 st.write(f"- {carac}")
-
-            # --- GRÁFICOS ---
-            # PRIMEIRO GRÁFICO (Agrupamento Humanas/Exatas)
             fig1, ax1 = plt.subplots(figsize=(10, 6))
-            
-            # Gerar pontos aleatórios para cada grupo
             np.random.seed(42)
-            
-            # Pontos para Humanas
             humanas_x = np.random.normal(0, 0.15, 20)
             humanas_y = np.random.normal(0, 0.15, 20)
-            
-            # Pontos para Exatas
             exatas_x = np.random.normal(1, 0.15, 20)
             exatas_y = np.random.normal(0, 0.15, 20)
-            
-            # Plotar grupos
             ax1.scatter(humanas_x, humanas_y, color='blue', alpha=0.6, label='Perfis de Humanas', s=80)
             ax1.scatter(exatas_x, exatas_y, color='green', alpha=0.6, label='Perfis de Exatas', s=80)
-            
-            # Plotar usuário
             user_x = 0 if st.session_state.perfil == "Humanas" else 1
             user_y = 0.3  # Posicionado acima dos outros pontos
             ax1.scatter(user_x, user_y, s=200, marker="*", 
                        color='red', label="Você", edgecolor='black')
+            
+
+                   
             
             ax1.set_title("Seu Agrupamento na Primeira Etapa", pad=20)
             ax1.set_xlim(-0.5, 1.5)
@@ -234,13 +205,9 @@ elif st.session_state.etapa == 2:
             ax1.set_yticks([])
             ax1.legend(bbox_to_anchor=(1.05, 1),loc='upper left', borderaxespad=0.)
             ax1.grid(True, linestyle="--", alpha=0.3)
-
-           
-           
-                   
+       
             st.pyplot(fig1)
             
-            # SEGUNDO GRÁFICO (Cursos específicos)
             pca = PCA(n_components=2)
             dados_2d = pca.fit_transform(dados_treino)
             usuario_2d = pca.transform(vetor_usuario.reshape(1, -1))
@@ -248,7 +215,7 @@ elif st.session_state.etapa == 2:
             fig2, ax2 = plt.subplots(figsize=(10, 6))
             cores = plt.cm.get_cmap('tab10', len(cursos_map))
             
-            # Plotagem dos clusters
+            
             for i, curso in enumerate(cursos_map.keys()):
                 pontos_curso = dados_2d[[j for j, cur in enumerate(rotulos) if cur == curso]]
                 ax2.scatter(
@@ -259,7 +226,7 @@ elif st.session_state.etapa == 2:
                     s=100
                 )
             
-            # Posicionamento preciso da estrela
+            
             centroide = np.mean(dados_2d[[i for i, curso in enumerate(rotulos) if curso == curso_ideal]], axis=0)
             ax2.scatter(
                 centroide[0], centroide[1] + 0.15,
