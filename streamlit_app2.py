@@ -31,15 +31,15 @@ if st.session_state.etapa == 1:
     st.write("Marque os conteúdos com que você mais se identifica:")
     
     itens = [
-        {"texto": "Escrever/ler poemas ou crônicas", "valor": 0},
+        {"texto": "Escrever poemas ou crônicas", "valor": 0},
         {"texto": "Resolver desafios de programação", "valor": 1},
         {"texto": "Debater sobre filosofia/sociologia", "valor": 0},
         {"texto": "Projetar experimentos científicos", "valor": 1},
-        {"texto": "Me exercitar", "valor": 0},
+        {"texto": "Analisar obras de arte", "valor": 0},
         {"texto": "Desenvolver fórmulas matemáticas", "valor": 1},
         {"texto": "Ler sobre política internacional", "valor": 0},
         {"texto": "Estudar novas tecnologias", "valor": 1},
-        {"texto": "Cuidar das pessoas", "valor": 0},
+        {"texto": "Interpretar textos literários", "valor": 0},
         {"texto": "Trabalhar com cálculos complexos", "valor": 1}
     ]
     
@@ -102,7 +102,7 @@ elif st.session_state.etapa == 2:
             "Gosto de debater e argumentar",
             "Sou criativo",
             "Me preocupo com questões sociais",
-            "Gosto de me exercitar",
+            "Gosto de estudar culturas e sociedades",
             "Tenho facilidade com idiomas",
             "Prefiro trabalhos colaborativos",
             "Gosto de analisar",
@@ -123,7 +123,7 @@ elif st.session_state.etapa == 2:
         "Humanas": {
             "Direito": [1, 3, 11, 4, 10],
             "Medicina/Psicologia/Odontologia": [2, 5, 8, 11, 9],
-            "Educação Física": [1, 2, 8, 8, 9],
+            "História": [0, 6, 7, 9, 10],
             "Letras": [0, 1, 7, 9, 11],
             "Marketing": [4, 6, 9, 2, 8]
         }
@@ -233,14 +233,6 @@ elif st.session_state.etapa == 2:
             ax1.scatter(humanas_x, humanas_y, color='blue', alpha=0.6, label='Perfis de Humanas', s=80)
             ax1.scatter(exatas_x, exatas_y, color='green', alpha=0.6, label='Perfis de Exatas', s=80)
             
-
-            # Plotar usuário
-           user_x = 0 if st.session_state.perfil == "Humanas" else 1
-           user_y = 0.3  # Posicionado acima dos outros pontos
-           ax1.scatter(user_x, user_y, s=200, marker="*", 
-           color='red', label="Você", edgecolor='black')
-
-           ax1.set_t
             # Plotar usuário
             user_x = 0 if st.session_state.perfil == "Humanas" else 1
             user_y = 0.3  # Posicionado acima dos outros pontos
@@ -253,12 +245,12 @@ elif st.session_state.etapa == 2:
             ax1.set_xticks([0, 1])
             ax1.set_xticklabels(["Humanas", "Exatas"])
             ax1.set_yticks([])
-            ax1.legend(bbox_to_anchor=(1.05, 1))
             ax1.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
             fig1.subplots_adjust(right=0.75)
-            st.pyplot(fig1)
 
-       
+            
+            st.pyplot(fig1)
+            
             # SEGUNDO GRÁFICO (Cursos específicos)
             pca = PCA(n_components=2)
             dados_2d = pca.fit_transform(dados_treino)
@@ -296,10 +288,8 @@ elif st.session_state.etapa == 2:
 
             st.divider()
             st.markdown(""" 
-            Na internet, muitas vezes não entregamos nossos dados de forma direta, mas basta assistir certos tipos de vídeos por mais tempo ou clicar em determinados conteúdos 
-            para que os algoritmos comecem a nos entender. Com base nesses padrões de comportamento, somos agrupados em perfis que se parecem com o nosso – tudo
-            isso por meio de técnicas como o KMeans. Assim, fica fácil para as redes sociais nos mostrarem conteúdos que parecem feitos sob medida. Entendeu agora como elas acertam 
-            tanto? Era a estatística agindo o tempo todo... e você nem percebeu.
+            Percebe agora como as redes sociais conseguem te mostrar conteúdos 
+            que parecem feitos sob medida? Pois é...era a estatística trabalhando o tempo todo e você nem percebeu!
             """)
 
     if st.button("↩️ Voltar"):
