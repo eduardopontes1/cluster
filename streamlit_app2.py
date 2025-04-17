@@ -31,15 +31,15 @@ if st.session_state.etapa == 1:
     st.write("Marque os conteúdos com que você mais se identifica:")
     
     itens = [
-        {"texto": "Escrever poemas ou crônicas", "valor": 0},
+        {"texto": "Escrever/ler poemas ou crônicas", "valor": 0},
         {"texto": "Resolver desafios de programação", "valor": 1},
         {"texto": "Debater sobre filosofia/sociologia", "valor": 0},
         {"texto": "Projetar experimentos científicos", "valor": 1},
-        {"texto": "Analisar obras de arte", "valor": 0},
+        {"texto": "Me exercitar", "valor": 0},
         {"texto": "Desenvolver fórmulas matemáticas", "valor": 1},
         {"texto": "Ler sobre política internacional", "valor": 0},
         {"texto": "Estudar novas tecnologias", "valor": 1},
-        {"texto": "Interpretar textos literários", "valor": 0},
+        {"texto": "Cuidar das pessoas", "valor": 0},
         {"texto": "Trabalhar com cálculos complexos", "valor": 1}
     ]
     
@@ -102,7 +102,7 @@ elif st.session_state.etapa == 2:
             "Gosto de debater e argumentar",
             "Sou criativo",
             "Me preocupo com questões sociais",
-            "Gosto de estudar culturas e sociedades",
+            "Gosto de me exercitar",
             "Tenho facilidade com idiomas",
             "Prefiro trabalhos colaborativos",
             "Gosto de analisar",
@@ -123,7 +123,7 @@ elif st.session_state.etapa == 2:
         "Humanas": {
             "Direito": [1, 3, 11, 4, 10],
             "Medicina/Psicologia/Odontologia": [2, 5, 8, 11, 9],
-            "História": [0, 6, 7, 9, 10],
+            "Educação Física": [1, 2, 8, 8, 9],
             "Letras": [0, 1, 7, 9, 11],
             "Marketing": [4, 6, 9, 2, 8]
         }
