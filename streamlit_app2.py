@@ -7,8 +7,6 @@ from collections import Counter
 
 # Configuração da página
 st.set_page_config(page_title="Perfil Acadêmico", layout="centered")
-
-
 st.title("🔍 Descubra seu perfil Acadêmico")
 
 st.markdown("""
@@ -20,7 +18,6 @@ st.markdown("""
             combinam com o seu perfil, com o objetivo de te manter engajado no aplicativo pelo maior tempo possível. Essa técnica também é usada para 
             exibir anúncios que têm mais chance de agradar você.
             """)
-
 
 # Variáveis de sessão
 if 'etapa' not in st.session_state:
@@ -147,42 +144,6 @@ elif st.session_state.etapa == 2:
         if len(selecoes) != 5:
             st.warning("Selecione exatamente 5 características!")
         else:
-           # --- PRIMEIRO GRÁFICO (Agrupamento Humanas/Exatas) ---
-            fig1, ax1 = plt.subplots(figsize=(10, 6))
-            
-            # Gerar pontos aleatórios para cada grupo
-            np.random.seed(42)
-            
-            # Pontos para Humanas
-            humanas_x = np.random.normal(0, 0.15, 20)
-            humanas_y = np.random.normal(0, 0.15, 20)
-            
-            # Pontos para Exatas
-            exatas_x = np.random.normal(1, 0.15, 20)
-            exatas_y = np.random.normal(0, 0.15, 20)
-            
-            # Plotar grupos
-            ax1.scatter(humanas_x, humanas_y, color='blue', alpha=0.6, label='Perfis de Humanas', s=80)
-            ax1.scatter(exatas_x, exatas_y, color='green', alpha=0.6, label='Perfis de Exatas', s=80)
-            
-            # Plotar usuário
-            user_x = 0 if st.session_state.perfil == "Humanas" else 1
-            user_y = 0.3  # Posicionado acima dos outros pontos
-            ax1.scatter(user_x, user_y, s=200, marker="*", 
-                       color='red', label="Você", edgecolor='black')
-            
-            ax1.set_title("Seu Agrupamento na Primeira Etapa", pad=20)
-            ax1.set_xlim(-0.5, 1.5)
-            ax1.set_ylim(-0.5, 0.5)
-            ax1.set_xticks([0, 1])
-            ax1.set_xticklabels(["Humanas", "Exatas"])
-            ax1.set_yticks([])
-            ax1.legend(bbox_to_anchor=(1.05, 1))
-            ax1.grid(True, linestyle="--", alpha=0.3)
-            
-            st.pyplot(fig1)
-            
-            # --- SEGUNDO GRÁFICO (Cursos específicos) ---
             # 1. Preparação dos dados com pesos reforçados
             dados_treino = []
             rotulos = []
@@ -225,14 +186,71 @@ elif st.session_state.etapa == 2:
             else:
                 curso_ideal = contagem.most_common(1)[0][0]
 
-
-
-
-                   
-            # 5. Visualização com PCA
-
-          
+            # --- RESULTADO FINAL ---
+            st.balloons()
+            emoji_curso = {
+                "Estatística": "📊", "Ciência da Computação": "💻",
+                "Engenharia Civil": "🏗️", "Engenharia Elétrica": "⚡",
+                "Química": "🧪", "Direito": "⚖️", 
+                "Medicina/Psicologia/Odontologia": "🧠", "História": "🏛️",
+                "Letras": "📖", "Marketing": "🎨"
+            }.get(curso_ideal, "🎓")
             
+            st.success(f"""
+            **Resultado Final:**
+            
+            🎯 **Você tem perfil de {st.session_state.perfil}** e se encaixa melhor em:
+            {emoji_curso} **{curso_ideal}**
+            
+            **Características selecionadas que mais contribuíram:**
+            """)
+            
+            # Mostra as características mais relevantes
+            indices_curso = cursos_map[curso_ideal]
+            caracs_principais = [
+                (i, caracteristicas[i]) for i in indices_curso 
+                if st.session_state.segunda_etapa_respostas[i]
+            ]
+            for idx, carac in sorted(caracs_principais, key=lambda x: x[0]):
+                st.write(f"- {carac}")
+
+            # --- GRÁFICOS ---
+            # PRIMEIRO GRÁFICO (Agrupamento Humanas/Exatas)
+            fig1, ax1 = plt.subplots(figsize=(10, 6))
+            
+            # Gerar pontos aleatórios para cada grupo
+            np.random.seed(42)
+            
+            # Pontos para Humanas
+            humanas_x = np.random.normal(0, 0.15, 20)
+            humanas_y = np.random.normal(0, 0.15, 20)
+            
+            # Pontos para Exatas
+            exatas_x = np.random.normal(1, 0.15, 20)
+            exatas_y = np.random.normal(0, 0.15, 20)
+            
+            # Plotar grupos
+            ax1.scatter(humanas_x, humanas_y, color='blue', alpha=0.6, label='Perfis de Humanas', s=80)
+            ax1.scatter(exatas_x, exatas_y, color='green', alpha=0.6, label='Perfis de Exatas', s=80)
+            
+            # Plotar usuário
+            user_x = 0 if st.session_state.perfil == "Humanas" else 1
+            user_y = 0.3  # Posicionado acima dos outros pontos
+            ax1.scatter(user_x, user_y, s=200, marker="*", 
+                       color='red', label="Você", edgecolor='black')
+            
+            ax1.set_title("Seu Agrupamento na Primeira Etapa", pad=20)
+            ax1.set_xlim(-0.5, 1.5)
+            ax1.set_ylim(-0.5, 0.5)
+            ax1.set_xticks([0, 1])
+            ax1.set_xticklabels(["Humanas", "Exatas"])
+            ax1.set_yticks([])
+            ax1.legend(bbox_to_anchor=(1.05, 1))
+            ax1.grid(True, linestyle="--", alpha=0.3)
+            
+            st.pyplot(fig1)
+            
+            # SEGUNDO GRÁFICO (Cursos específicos)
             pca = PCA(n_components=2)
             dados_2d = pca.fit_transform(dados_treino)
             usuario_2d = pca.transform(vetor_usuario.reshape(1, -1))
@@ -265,42 +283,15 @@ elif st.session_state.etapa == 2:
             ax2.set_title("Sua Proximidade com os Cursos (Análise de Cluster)", pad=20)
             ax2.legend(bbox_to_anchor=(1.05,1))
             st.pyplot(fig2)
-                 # --- RESULTADO FINAL ---
-            st.balloons()
-            emoji_curso = {
-                "Estatística": "📊", "Ciência da Computação": "💻",
-                "Engenharia Civil": "🏗️", "Engenharia Elétrica": "⚡",
-                "Química": "🧪", "Direito": "⚖️", 
-                "Medicina/Psicologia/Odontologia": "🧠", "História": "🏛️",
-                "Letras": "📖", "Marketing": "🎨"
-            }.get(curso_ideal, "🎓")
-            
-            st.success(f"""
-            **Resultado Final:**
-            
-            🎯 **Você tem perfil de {st.session_state.perfil}** e se encaixa melhor em:
-            {emoji_curso} **{curso_ideal}**
-            
-            **Características selecionadas que mais contribuíram:**
-            """)
-            
-            # Mostra as características mais relevantes
-            indices_curso = cursos_map[curso_ideal]
-            caracs_principais = [
-                (i, caracteristicas[i]) for i in indices_curso 
-                if st.session_state.segunda_etapa_respostas[i]
-            ]
-            for idx, carac in sorted(caracs_principais, key=lambda x: x[0]):
-                st.write(f"- {carac}")
 
             st.divider()
-        
             st.markdown(""" 
-            Percebe agora como as redes sociais conseguem te mostrar conteúdos 
-            que parecem feitos sob medida? Pois é...era a estatística trabalhando o tempo todo e você nem percebeu!
+            Na internet, muitas vezes não entregamos nossos dados de forma direta, mas basta assistir certos tipos de vídeos por mais tempo ou clicar em determinados conteúdos 
+            para que os algoritmos comecem a nos entender. Com base nesses padrões de comportamento, somos agrupados em perfis que se parecem com o nosso – tudo
+            isso por meio de técnicas como o KMeans. Assim, fica fácil para as redes sociais nos mostrarem conteúdos que parecem feitos sob medida. Entendeu agora como elas acertam 
+            tanto? Era a estatística agindo o tempo todo... e você nem percebeu.
             """)
 
     if st.button("↩️ Voltar"):
         st.session_state.etapa = 1
-        st.rerun()      
-       
+        st.rerun()
