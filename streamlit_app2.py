@@ -5,9 +5,9 @@ from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from collections import Counter
 st.set_page_config(page_title="Perfil Acadêmico", layout="centered")
-st.title("🔍 Descubra seu perfil Acadêmico")
+st.title("Descubra seu perfil Acadêmico")
 st.markdown("""
-            **📊 Como funciona a análise de perfil?**
+            **Como funciona a análise de perfil?**
             
             A técnica estatística conhecida como K-Means é amplamente utilizada em aplicativos de redes sociais como Instagram e TikTok. Já reparou que, 
             ao criar uma conta no TikTok, ele pergunta que tipo de vídeos você gosta? Isso é parte de um processo de agrupamento, no qual o algoritmo 
@@ -38,7 +38,7 @@ if st.session_state.etapa == 1:
     for i, item in enumerate(itens):
         if st.checkbox(item["texto"], key=f"item_{i}"):
             respostas[i] = 1
-    if st.button("🔎 Avançar"):
+    if st.button("Avançar"):
         if sum(respostas) < 3:
             st.warning("Selecione pelo menos 3 conteúdos!")
         else:
@@ -63,7 +63,7 @@ if st.session_state.etapa == 1:
 elif st.session_state.etapa == 2:
     st.success(f"Perfil principal: **{st.session_state.perfil}**")
     st.divider()
-    st.subheader("📌Selecione as 5 características que mais combinam com você")
+    st.subheader("Selecione as 5 características que mais combinam com você")
     caracteristicas = {
         "Exatas": [
             "Gosto de analisar dados e padrões",
@@ -120,7 +120,7 @@ elif st.session_state.etapa == 2:
             if checked:
                 selecoes.append(carac)
 
-    if st.button("🎯 Descobrir meu curso ideal"):
+    if st.button("Descobrir meu curso ideal"):
         if len(selecoes) != 5:
             st.warning("Selecione exatamente 5 características!")
         else:
@@ -169,7 +169,7 @@ elif st.session_state.etapa == 2:
             st.success(f"""
             **Resultado Final:**
             
-            🎯 **Você tem perfil de {st.session_state.perfil}** e se encaixa melhor em:
+            **Você tem perfil de {st.session_state.perfil}** e se encaixa melhor em:
             {emoji_curso} **{curso_ideal}**
             
             **Características selecionadas que mais contribuíram:**
@@ -249,6 +249,6 @@ elif st.session_state.etapa == 2:
             tanto? Era a estatística agindo o tempo todo... e você nem percebeu.
             """)
 
-    if st.button("↩️ Voltar"):
+    if st.button("Voltar"):
         st.session_state.etapa = 1
         st.rerun()
