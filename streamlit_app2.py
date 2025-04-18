@@ -104,7 +104,7 @@ elif st.session_state.etapa == 2:
         },
         "Humanas": {
             "Direito": [1, 3, 11, 4, 10],
-            "Medicina/Psicologia/Odontologia": [2, 5, 8, 11, 9],
+            "Medicina/Psicologia/Odontologia": [0, 1, 2, 8, 9],
             "Educação Física": [1, 2, 8, 8, 9],
             "Letras": [0, 1, 7, 9, 11],
             "Marketing": [4, 0, 9, 2, 8]
