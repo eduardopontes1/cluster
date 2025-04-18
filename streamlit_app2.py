@@ -124,17 +124,17 @@ elif st.session_state.etapa == 2:
         if len(selecoes) != 5:
             st.warning("Selecione exatamente 5 características!")
         else:
-            # 1. Preparação dos dados com pesos reforçados
+            
             dados_treino = []
             rotulos = []
             
             for curso, indices in cursos_map.items():
-                for _ in range(15):  # Mais exemplos por curso
+                for _ in range(15):  
                     vetor = np.zeros(len(caracteristicas))
-                    # Peso maior para características principais
+                    
                     for idx in indices:
                         vetor[idx] = 1.5
-                    # Adiciona variação controlada
+                    
                     vetor += np.random.normal(0, 0.1, len(vetor))
                     dados_treino.append(vetor)
                     rotulos.append(curso)
@@ -190,7 +190,7 @@ elif st.session_state.etapa == 2:
             ax1.scatter(humanas_x, humanas_y, color='blue', alpha=0.6, label='Perfis de Humanas', s=80)
             ax1.scatter(exatas_x, exatas_y, color='green', alpha=0.6, label='Perfis de Exatas', s=80)
             user_x = 0 if st.session_state.perfil == "Humanas" else 1
-            user_y = 0.3  # Posicionado acima dos outros pontos
+            user_y = 0.3  
             ax1.scatter(user_x, user_y, s=200, marker="*", 
                        color='red', label="Você", edgecolor='black')
             
