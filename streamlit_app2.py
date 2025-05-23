@@ -23,16 +23,16 @@ if 'etapa' not in st.session_state:
 if st.session_state.etapa == 1:
     st.write("Marque os conteúdos com que você mais se identifica:")
     itens = [
-        {"texto": "Escrever/ler poemas ou crônicas", "valor": 0},
-        {"texto": "Resolver desafios de programação", "valor": 1},
-        {"texto": "Debater sobre filosofia/sociologia", "valor": 0},
-        {"texto": "Projetar experimentos científicos", "valor": 1},
-        {"texto": "Me exercitar", "valor": 0},
-        {"texto": "Desenvolver fórmulas matemáticas", "valor": 1},
-        {"texto": "Ler sobre política internacional", "valor": 0},
-        {"texto": "Estudar novas tecnologias", "valor": 1},
-        {"texto": "Cuidar das pessoas", "valor": 0},
-        {"texto": "Trabalhar com cálculos complexos", "valor": 1}
+        {"texto": "Me interesso por entender comportamentos humanos e emoções.", "valor": 0},
+        {"texto": "Gosto de fazer cursos que me ensinem mais sobre tecnologia.", "valor": 1},
+        {"texto": "Tenho interesse em ensinar, orientar ou mediar conflitos.", "valor": 0},
+        {"texto": "Tenho interesse em seguir uma carreira que use habilidades tecnológicas.", "valor": 1},
+        {"texto": "Me vejo liderando, organizando pessoas ou projetos com impacto social.", "valor": 0},
+        {"texto": "Gosto de fazer cursos que me ensinem mais sobre ciência.", "valor": 1},
+        {"texto": "Me interesso por expressar ideias de forma criativa ou estética.", "valor": 0},
+        {"texto": "Tenho interesse em seguir uma carreira que use habilidades científicas.", "valor": 1},
+        {"texto": "Gosto de ajudar pessoas a resolverem seus problemas.", "valor": 0},
+        {"texto": "Tenho interesse em seguir uma carreira que use habilidades matemáticas.", "valor": 1}
     ]
     respostas = [0] * len(itens)
     for i, item in enumerate(itens):
@@ -63,35 +63,35 @@ if st.session_state.etapa == 1:
 elif st.session_state.etapa == 2:
     st.success(f"Perfil principal: **{st.session_state.perfil}**")
     st.divider()
-    st.subheader("Selecione as 5 características que mais combinam com você")
+    st.subheader("Na escola, prefiro atividades...")
     caracteristicas = {
         "Exatas": [
-            "Gosto de analisar dados e padrões",
-            "Tenho facilidade com cálculos complexos",
-            "Me interesso por programação e algoritmos",
-            "Gosto de resolver problemas práticos",
-            "Tenho curiosidade sobre como as coisas funcionam",
-            "Prefiro raciocínio lógico a subjetivo",
-            "Gosto de projetar e construir coisas",
-            "Me interesso por experimentos científicos",
-            "Tenho habilidade com números e gráficos",
-            "Gosto de entender reações e transformações",
-            "Me interesso por tecnologia avançada",
-            "Gosto de resolver enigmas"
+            "...com uso de fórmulas e análise de gráficos!",
+            "...que envolvem lógica, matemática e organização!",
+            "...que envolvem programar ou criar sistemas digitais!",
+            "...com tecnologias novas e inovadoras!",
+            "...de laboratórios e experimentos científicos!",
+            "...em que eu aplico conhecimentos matemáticos na prática!",
+            "...que combinam teoria com prática técnica!",
+            "...que simulam construção e planejamento de estruturas!",
+            "...de simulação ou modelagem de sistemas reais!",
+            "...voltadas para entender reações químicas!",
+            "...para entender como funcionam aparelhos e circuitos!",
+            "...com resolução de problemas complexos!"
         ],
         "Humanas": [
-            "Gosto de ler e interpretar textos",
-            "Tenho facilidade em me expressar oralmente",
-            "Me interesso por entender comportamentos",
-            "Gosto de debater e argumentar",
-            "Sou criativo",
-            "Me preocupo com questões sociais",
-            "Gosto de me exercitar",
-            "Tenho facilidade com idiomas",
-            "Prefiro trabalhos colaborativos",
-            "Gosto de interagir com outras pessoas",
-            "Me interesso por questões políticas",
-            "Tenho habilidade para mediar conflitos"
+            "...com leitura, interpretação e produção de textos!",
+            "...que desenvolvem empatia e cuidado com o outro!",
+            "...que discutem comportamento humano e sociedade!",
+            "...voltadas à comunicação e influência social!",
+            "...que envolvem convencer pessoas com ideias bem construídas!",
+            "...de voluntariado e projetos sociais!",
+            "...focadas em bem-estar físico e saúde!",
+            "...com artes, desenhos, textos ou música!",
+            "...que envolvem motivar pessoas a adotarem hábitos mais saudáveis!",
+            "...que envolvem comunicar ideias que inspirem cuidado, bem-estar e qualidade de vida!",
+            "...que envolvem debates e expressão de opiniões!",
+            "...que envolvem analisar discursos, narrativas e seus impactos na sociedade!"
         ]
     }[st.session_state.perfil]
     cursos_map = {
